@@ -1,0 +1,72 @@
+<root>
+  <ID_1 iIndex="1" sDes="Magician">
+    <AnimatorXmlSetting>
+      <SavePath Type="System.String">Assets\GameMain\Animator</SavePath>
+      <SaveName Type="System.String">Magician</SaveName>
+      <bSetEmptyState Type="System.Boolean">True</bSetEmptyState>
+    </AnimatorXmlSetting>
+    <AnimatorXmlData>
+      <XmlPath Type="System.String">Assets\AssetData\RPG\RPG\Model\Model Character\Magician</XmlPath>
+      <nType Type="System.Int32">1</nType>
+      <nLayer Type="System.Int32">0</nLayer>
+      <fTime Type="System.Single">0.2</fTime>
+      <sDes Type="System.String">魔法师动作</sDes>
+    </AnimatorXmlData>
+  </ID_1>
+  <ID_2 iIndex="2" sDes="Swordman">
+    <AnimatorXmlSetting>
+      <SavePath Type="System.String">Assets\GameMain\Animator</SavePath>
+      <SaveName Type="System.String">Swordman</SaveName>
+      <bSetEmptyState Type="System.Boolean">True</bSetEmptyState>
+    </AnimatorXmlSetting>
+    <AnimatorXmlData>
+      <XmlPath Type="System.String">Assets\AssetData\RPG\RPG\Model\Model Character\Swordman</XmlPath>
+      <nType Type="System.Int32">1</nType>
+      <nLayer Type="System.Int32">0</nLayer>
+      <fTime Type="System.Single">0.2</fTime>
+      <sDes Type="System.String">剑客动作</sDes>
+    </AnimatorXmlData>
+  </ID_2>
+  <ID_3 iIndex="3" sDes="WolfBaby">
+    <AnimatorXmlSetting>
+      <SavePath Type="System.String">Assets\GameMain\Animator</SavePath>
+      <SaveName Type="System.String">WolfBaby</SaveName>
+      <bSetEmptyState Type="System.Boolean">True</bSetEmptyState>
+    </AnimatorXmlSetting>
+    <AnimatorXmlData>
+      <XmlPath Type="System.String">Assets\AssetData\RPG\RPG\Model\Model Enemy\Wolf\WolfBaby</XmlPath>
+      <nType Type="System.Int32">1</nType>
+      <nLayer Type="System.Int32">0</nLayer>
+      <fTime Type="System.Single">0.2</fTime>
+      <sDes Type="System.String">小狼怪</sDes>
+    </AnimatorXmlData>
+  </ID_3>
+  <ID_4 iIndex="4" sDes="WolfNormal">
+    <AnimatorXmlSetting>
+      <SavePath Type="System.String">Assets\GameMain\Animator</SavePath>
+      <SaveName Type="System.String">WolfNormal</SaveName>
+      <bSetEmptyState Type="System.Boolean">True</bSetEmptyState>
+    </AnimatorXmlSetting>
+    <AnimatorXmlData>
+      <XmlPath Type="System.String">Assets\AssetData\RPG\RPG\Model\Model Enemy\Wolf\WolfNormal</XmlPath>
+      <nType Type="System.Int32">1</nType>
+      <nLayer Type="System.Int32">0</nLayer>
+      <fTime Type="System.Single">0.2</fTime>
+      <sDes Type="System.String">狼人</sDes>
+    </AnimatorXmlData>
+  </ID_4>
+  <ID_5 iIndex="5" sDes="WolfBoss">
+    <AnimatorXmlSetting>
+      <SavePath Type="System.String">Assets\GameMain\Animator</SavePath>
+      <SaveName Type="System.String">WolfBoss</SaveName>
+      <bSetEmptyState Type="System.Boolean">True</bSetEmptyState>
+    </AnimatorXmlSetting>
+    <AnimatorXmlData>
+      <XmlPath Type="System.String">Assets\AssetData\RPG\RPG\Model\Model Enemy\Wolf\WolfBoss</XmlPath>
+      <nType Type="System.Int32">1</nType>
+      <nLayer Type="System.Int32">0</nLayer>
+      <fTime Type="System.Single">0.2</fTime>
+      <sDes Type="System.String">狼王</sDes>
+    </AnimatorXmlData>
+  </ID_5>
+</root>
