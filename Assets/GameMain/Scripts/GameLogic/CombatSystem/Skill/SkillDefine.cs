@@ -1,6 +1,7 @@
 ﻿using System;
 using GameFramework;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace Galaxy
 {
@@ -71,8 +72,8 @@ namespace Galaxy
     {
         SkillCost_Hp = 1,                   //消耗HP
         SkillCost_Mp,                       //消耗MP
-        SkillCost_E1,                       //消耗能量1
-        SkillCost_E2,                       //消耗能量2
+        //SkillCost_E1,                       //消耗能量1
+        //SkillCost_E2,                       //消耗能量2
     };
 
     public enum eSkillSpellResult
@@ -152,6 +153,17 @@ namespace Galaxy
 			m_vMoveTarPos = Vector3.zero;
 		}
 	}
+
+    public class GSkillExcludeList : HashSet<int>
+    {
+        public GSkillExcludeList()
+        {
+            m_bCount = false;
+            m_nCount = 0;
+        }
+        public bool m_bCount;
+        public int m_nCount;
+    }
 
     public enum eTriggerNotifyType
     {

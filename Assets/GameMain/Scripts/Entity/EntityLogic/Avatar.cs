@@ -48,12 +48,25 @@ namespace Galaxy
 				return m_skillCom;
 			}
 		}
+		private GCDComponent m_cdCom;
+		public GCDComponent CDCom
+		{
+			get
+			{
+				if(m_cdCom == null)
+				{
+					m_cdCom = GetComponent<GCDComponent>();
+				}
+				return m_cdCom;
+			}
+		}
 
 		protected virtual void InitComponent()
 		{
 			gameObject.AddComponent<AnimationComponent>().SetOwner(this);
 			gameObject.AddComponent<MoveComponent>().SetOwner(this);
 			gameObject.AddComponent<SkillComponent>().SetOwner(this);
+			gameObject.AddComponent<GCDComponent>().SetOwner(this);
 		}
 
 		public bool IsDead
@@ -201,6 +214,12 @@ namespace Galaxy
 			if(m_AvatarData == null)
 				return null;
 			return m_AvatarData.GetAValue();
+		}
+
+		public void SetHpCost(float nCostHp)
+		{
+			float hp = Mathf.Max(0, m_AvatarData.HP - nCostHp);
+			m_AvatarData.HP = hp;
 		}
 	}
 }

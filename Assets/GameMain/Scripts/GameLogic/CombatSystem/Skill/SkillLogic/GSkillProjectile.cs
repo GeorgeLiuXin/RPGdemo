@@ -1,147 +1,221 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using GameFramework;
 
 namespace Galaxy
 {
 	/// <summary>
 	/// 技能子弹
 	/// </summary>
-	public class GSkillProjectile : MonoBehaviour
-    {
+	public abstract class GSkillProjectile : IReference
+	{
+		protected int nProjectileSerial;
+		protected bool m_bDestroy;
+		protected float m_fSpeed;
+		protected float m_fCurTime;
+		protected float m_fLifeTime;
+		protected float m_fCurEffectTime;
+		protected float m_fFirstEffectTime;
+		protected float m_fEffectTime;
+		protected GTargetInfo m_TargetInfo;
+		protected DRSkillData m_pSkillData;
+		protected SkillAValueData m_SkillAValue;
+		protected GSkillExcludeList m_vExcludeList;
 
-        // Use this for initialization
-        void Start()
-        {
+		protected Vector3 m_vPreCheckPos;
 
-        }
+		public bool IsDestroy()
+		{
+			return m_bDestroy;
+		}
 
-        // Update is called once per frame
-        void Update()
-        {
 
-        }
-    }
+		public virtual bool Init(DRSkillData pSkillData, GTargetInfo sTarInfo, SkillAValueData sSkillAValue, Avatar pCaster)
+		{
+			if(pSkillData == null)
+				return false;
+
+			m_fCurTime = 0;
+			m_pSkillData = pSkillData;
+			m_TargetInfo = sTarInfo;
+			m_fSpeed = m_pSkillData.MSV_ProjectileSpeed;
+			m_fLifeTime = m_pSkillData.MSV_ProjectileTime;
+			m_fFirstEffectTime = m_pSkillData.MSV_ProjectileFirstEffectTime;
+			m_fEffectTime = m_pSkillData.MSV_EffectTime;
+			m_fCurEffectTime = m_fFirstEffectTime;
+			m_vExcludeList = new GSkillExcludeList();
+			m_vExcludeList.m_nCount = m_pSkillData.MSV_ProjectileEffectCount;
+			m_vExcludeList.m_bCount = (m_vExcludeList.m_nCount > 0);
+
+			//int nProjectileOffset = m_pSkillData.MSV_ProjectileOffset;
+			//Vector3 vOffset = GSkillProjectileOffsetManager.Instance.GetProjectileOffset(nProjectileOffset);
+			//m_TargetInfo.m_vSrcPos += vOffset;
+			m_TargetInfo.m_vSrcPos += new Vector3(0, 1, 0);
+
+			m_SkillAValue = sSkillAValue.CloneData();
+
+			m_vPreCheckPos = m_TargetInfo.m_vSrcPos;
+			return true;
+		}
+
+		public void Tick(float fFrameTime, Avatar pCaster)
+		{
+			if(IsDestroy())
+				return;
+			if(pCaster == null || m_pSkillData == null)
+			{
+				KillProjectile(pCaster);
+				return;
+			}
+
+			m_fCurTime += fFrameTime;
+			//移动
+			m_vPreCheckPos = m_TargetInfo.m_vSrcPos;
+			TickMove(fFrameTime, pCaster);
+			if(IsDestroy())
+				return;
+
+			//周期效果
+			PeriodEffect(fFrameTime, pCaster);
+
+			if(m_fCurTime >= m_fLifeTime)
+			{
+				KillProjectile(pCaster);
+			}
+		}
+
+		public abstract void TickMove(float fFrameTime, Avatar pCaster);
+
+		public void PeriodEffect(float fFrameTime, Avatar pCaster)
+		{
+			if(IsDestroy())
+				return;
+
+			if(m_pSkillData == null || !m_pSkillData.IsBulletPeriodEffect())
+				return;
+
+			m_fEffectTime -= fFrameTime;
+			if(m_fEffectTime > 0)
+				return;
+
+			m_fEffectTime += m_pSkillData.MSV_ProjectileEffectTime;
+
+			ProcessEffect(pCaster);
+			//子弹产生周期事件
+			if(pCaster && pCaster.SkillCom)
+			{
+				//todo
+				//pCaster.SkillCom->PushTriggerNotify(m_pSkillData->m_nDataID, m_TargetInfo.m_nTargetID, NotifyType_Bullet, TriggerNotify_BulletEffect, 0, &m_TargetInfo.m_vSrcPos, &m_TargetInfo.m_vTarPos, &m_TargetInfo.m_vAimDir);
+			}
+
+			if(m_vExcludeList.m_bCount && m_vExcludeList.m_nCount <= 0)
+			{
+				KillProjectile(pCaster);
+			}
+		}
+
+		private void ProcessEffect(Avatar pCaster)
+		{
+			if(pCaster == null || pCaster.SkillCom == null)
+				return;
+			pCaster.SkillCom.ProcessSkillEffect(m_pSkillData, m_TargetInfo, m_SkillAValue, m_vExcludeList);
+		}
+
+		private void HitEffect(Avatar pCaster)
+		{
+			if(IsDestroy())
+				return;
+
+			if(m_pSkillData == null)
+				return;
+
+			if(m_pSkillData.IsBulletHitEffect())
+			{
+				ProcessEffect(pCaster);
+			}
+
+			//子弹产生命中事件
+			if(m_pSkillData.IsBulletNotify())
+			{
+				if(m_TargetInfo.m_nTargetID == -1)
+				{
+					if(pCaster && pCaster.SkillCom)
+					{
+						//todo
+						//pCaster.SkillCom->PushTriggerNotify(m_pSkillData->m_nDataID, m_TargetInfo.m_nTargetID, NotifyType_Bullet, TriggerNotify_BulletHitEnv, 0, &m_TargetInfo.m_vSrcPos, &m_TargetInfo.m_vTarPos, &m_TargetInfo.m_vAimDir);
+					}
+				}
+				else
+				{
+					if(pCaster && pCaster.SkillCom)
+					{
+						//todo
+						//pCaster->GetSkillComponent()->PushTriggerNotify(m_pSkillData->m_nDataID, m_TargetInfo.m_nTargetID, NotifyType_Bullet, TriggerNotify_BulletHit, 0, &m_TargetInfo.m_vSrcPos, &m_TargetInfo.m_vTarPos, &m_TargetInfo.m_vAimDir);
+					}
+				}
+			}
+
+			if(!m_pSkillData.IsBulletHitNoRemove())
+			{
+				KillProjectile(pCaster);
+			}
+		}
+
+		public void KillProjectile(Avatar pCaster)
+		{
+			if(IsDestroy())
+				return;
+
+			m_bDestroy = true;
+			//子弹产生死亡事件
+			if(m_pSkillData != null && m_pSkillData.IsBulletNotify() && pCaster && pCaster.SkillCom)
+			{
+				//todo
+				//pCaster.SkillCom.PushTriggerNotify(m_pSkillData->m_nDataID, m_TargetInfo.m_nTargetID, NotifyType_Bullet, TriggerNotify_BulletDead, 0, &m_TargetInfo.m_vSrcPos, &m_TargetInfo.m_vTarPos, &m_TargetInfo.m_vAimDir);
+			}
+		}
+
+		public void Clear()
+		{
+			m_fCurTime = 0;
+			m_pSkillData = null;
+			m_TargetInfo = null;
+			m_fSpeed = 0;
+			m_fLifeTime = 0;
+			m_fFirstEffectTime = 0;
+			m_fEffectTime = 0;
+			m_fCurEffectTime = 0;
+			m_vExcludeList = null;
+			m_vExcludeList.m_nCount = 0;
+			m_vExcludeList.m_bCount = false;
+
+			m_SkillAValue = null;
+			m_vPreCheckPos = default(Vector3);
+		}
+	}
+
+	//追踪子弹
+	public class GSkillProjectile_Track : GSkillProjectile
+	{
+		public override void TickMove(float fFrameTime, Avatar pCaster)
+		{
+
+		}
+	}
+
+	//陷阱子弹
+	public class GSkillProjectile_Trap : GSkillProjectile
+	{
+		public override void TickMove(float fFrameTime, Avatar pCaster)
+		{
+
+		}
+	}
 
 }
 
-//namespace Galaxy
-//{
-
-//    FINISH_FACTORY_Arg0(GSkillProjectile);
-//    GSkillProjectile::GSkillProjectile()
-//		: m_bDestroy(false)
-//		, m_fSpeed(0)
-//		, m_nProjectileID(0)
-//		, m_nCurTime(0)
-//		, m_nLifeTime(0)
-//		, m_nFirstEffectTime(0)
-//		, m_nEffectTime(0)
-//		, m_pSkillData(NULL)
-//		, m_nFlyTime(0)
-//        , m_PreCheckPos(0.0f, 0.0f, 0.0f)
-//		, m_nCurveID(-1)
-//    {
-
-//    }
-
-//    GSkillProjectile::~GSkillProjectile()
-//    {
-//        FACTORY_DELOBJ(m_pSkillData);
-//    }
-//    bool GSkillProjectile::Init(GSkillData* pSkillData, GSkillTargetInfo& sTarInfo, RoleAValue& sRoleValue, GNodeAvatar* pCast)
-//    {
-//        if (!pSkillData)
-//            return false;
-//        m_TargetInfo = sTarInfo;
-//        //if (pCast && sTarInfo.m_nShapeID>=0)
-//        //{
-//        //	GNodeAvatar* pTar = pCast->GetSceneAvatar(sTarInfo.m_nTargetID);
-//        //	if (pTar)
-//        //	{
-//        //		m_TargetInfo.m_vTarPos = pTar->GetCollisionShapePos(sTarInfo.m_nShapeID);
-//        //	}
-//        //}
-
-//        f32 foff = (f32)pSkillData->GetIntValue(MSV_ProjectileParam1) / 10.0f;
-//        Vector3 vOff;
-//        vOff.x = GALAXY_RANDOM.RandFloat(-foff, foff);
-//        vOff.y = GALAXY_RANDOM.RandFloat(-foff, foff);
-//        vOff.z = 0;
-//        m_TargetInfo.m_vTarPos += vOff;
-
-//        m_pSkillData = pSkillData->Clone();
-//        m_fSpeed = m_pSkillData->GetFloatValue(MSV_ProjectileSpeed);
-//        m_nLifeTime = m_pSkillData->GetIntValue(MSV_ProjectileTime);
-//        m_nFirstEffectTime = m_pSkillData->GetIntValue(MSV_ProjectileFirstEffectTime);
-//        m_nEffectTime = m_nFirstEffectTime;
-//        m_vExcludeList.m_nCount = m_pSkillData->GetIntValue(MSV_ProjectileEffectCount);
-//        m_vExcludeList.m_bCount = (m_vExcludeList.m_nCount > 0);
-
-//        int32 nProjectileOffset = m_pSkillData->GetIntValue(MSV_ProjectileOffset);
-//        Vector3 vOffset = GSkillProjectileOffsetManager::Instance().GetProjectileOffset(nProjectileOffset);
-//        m_TargetInfo.m_vSrcPos += vOffset;
-
-//        //      float maxDis = m_fSpeed * (m_nLifeTime / 1000);
-//        //      float randomRange = ((int)(maxDis / 3)) * 0.1;      //
-
-//        ////tempcode
-//        //      m_TargetInfo.m_vTarPos += sTarInfo.m_vOffset;
-//        ////base noise
-//        //m_TargetInfo.m_vTarPos.x += GALAXY_RANDOM.RandFloat(-randomRange, randomRange);
-//        //m_TargetInfo.m_vTarPos.y += GALAXY_RANDOM.RandFloat(-randomRange, randomRange);
-//        //m_TargetInfo.m_vTarPos.z += GALAXY_RANDOM.RandFloat(-randomRange, randomRange);
-
-//        m_RoleValue.Copy(sRoleValue);
-
-//        if (m_TargetInfo.m_vTarPos != m_TargetInfo.m_vSrcPos)
-//            m_TargetInfo.m_vAimDir = m_TargetInfo.m_vTarPos - m_TargetInfo.m_vSrcPos;
-
-//        m_TargetInfo.m_vAimDir.normalize();
-//        m_PreCheckPos = m_TargetInfo.m_vSrcPos;
-//        m_bTimeOut = false;
-
-//        return true;
-//    }
-
-//    void GSkillProjectile::Tick(int32 nFrameTime, GNodeAvatar* pCaster)
-//    {
-//        if (IsDestroy())
-//        {
-//            return;
-//        }
-
-//        if (!pCaster || !m_pSkillData)
-//        {
-//            KillProjectile(pCaster);
-//            return;
-//        }
-
-//        m_nCurTime += nFrameTime;
-//        //目标是自己 立即造成效果
-//        if (m_pSkillData->IsTargetAvatar() && pCaster->GetAvatarID() == m_TargetInfo.m_nTargetID)
-//        {
-//            HitEffect(pCaster);
-//            return;
-//        }
-
-//        //移动
-//        m_PreCheckPos = m_TargetInfo.m_vSrcPos;
-//        TickMove(nFrameTime, pCaster);
-//        if (IsDestroy())
-//            return;
-
-//        //周期效果
-//        PeriodEffect(nFrameTime, pCaster);
-
-//        m_nLifeTime -= nFrameTime;
-//        if (m_nLifeTime <= 0)
-//        {
-//            m_bTimeOut = true;
-//            OnTimeout(pCaster);
-//            KillProjectile(pCaster);
-//        }
-//    }
 
 //    void GSkillProjectile::TickMove(int32 nFrameTime, GNodeAvatar* pCaster)
 //    {
@@ -159,94 +233,6 @@ namespace Galaxy
 //            HitEffect(pCaster);
 //            KillProjectile(pCaster);
 //            return;
-//        }
-//    }
-
-//    void GSkillProjectile::OnTimeout(GNodeAvatar* pCaster)
-//    {
-//        if (IsDestroy())
-//            return;
-
-//        if (!m_pSkillData)
-//            return;
-
-//        if (m_pSkillData->IsBulletTimeOutEffect())
-//        {
-//            ProcessEffect(pCaster);
-//        }
-//    }
-
-//    void GSkillProjectile::PeriodEffect(int32 nFrameTime, GNodeAvatar* pCaster)
-//    {
-//        if (IsDestroy())
-//            return;
-
-//        if (!m_pSkillData || !m_pSkillData->IsBulletPeriodEffect())
-//            return;
-
-//        m_nEffectTime -= nFrameTime;
-//        if (m_nEffectTime > 0)
-//            return;
-
-//        m_nEffectTime += m_pSkillData->GetIntValue(MSV_ProjectileEffectTime);
-
-//        ProcessEffect(pCaster);
-//        //DrawPos(*pCaster, m_TargetInfo.m_vSrcPos);
-//        //子弹产生周期事件
-//        if (pCaster && pCaster->GetSkillComponent())
-//        {
-//            pCaster->GetSkillComponent()->PushTriggerNotify(m_pSkillData->m_nDataID, m_TargetInfo.m_nTargetID, NotifyType_Bullet, TriggerNotify_BulletEffect, 0, &m_TargetInfo.m_vSrcPos, &m_TargetInfo.m_vTarPos, &m_TargetInfo.m_vAimDir);
-//        }
-
-//        if (m_vExcludeList.m_bCount && m_vExcludeList.m_nCount <= 0)
-//        {
-//            KillProjectile(pCaster);
-//        }
-//    }
-
-//    void GSkillProjectile::HitEffect(GNodeAvatar* pCaster)
-//    {
-//        if (IsDestroy())
-//            return;
-
-//        if (!m_pSkillData)
-//            return;
-
-//        if (m_pSkillData->IsBulletHitEffect())
-//        {
-//            ProcessEffect(pCaster);
-//        }
-
-//        //子弹产生命中事件
-//        if (m_pSkillData->IsBulletNotify())
-//        {
-//            if (m_TargetInfo.m_nTargetID == -1)
-//            {
-//                if (pCaster && pCaster->GetSkillComponent())
-//                {
-//                    pCaster->GetSkillComponent()->PushTriggerNotify(m_pSkillData->m_nDataID, m_TargetInfo.m_nTargetID, NotifyType_Bullet, TriggerNotify_BulletHitEnv, 0, &m_TargetInfo.m_vSrcPos, &m_TargetInfo.m_vTarPos, &m_TargetInfo.m_vAimDir);
-//                }
-//            }
-//            else
-//            {
-//                if (pCaster && pCaster->GetSkillComponent())
-//                {
-//                    pCaster->GetSkillComponent()->PushTriggerNotify(m_pSkillData->m_nDataID, m_TargetInfo.m_nTargetID, NotifyType_Bullet, TriggerNotify_BulletHit, 0, &m_TargetInfo.m_vSrcPos, &m_TargetInfo.m_vTarPos, &m_TargetInfo.m_vAimDir);
-//                }
-//            }
-//        }
-
-//        if (!m_pSkillData->IsBulletHitNoRemove())
-//        {
-//            KillProjectile(pCaster);
-//        }
-//    }
-
-//    void GSkillProjectile::ProcessEffect(GNodeAvatar* pCaster)
-//    {
-//        if (pCaster && pCaster->GetSkillComponent())
-//        {
-//            pCaster->GetSkillComponent()->ProcessSkillEffect(m_pSkillData, m_TargetInfo, m_RoleValue, m_vExcludeList);
 //        }
 //    }
 
@@ -308,19 +294,6 @@ namespace Galaxy
 //    }
 //}
 
-//#if _DEBUG
-//		{
-//			GPacketDrawLine pkt;
-//			pkt.x1 = m_PreCheckPos.x;
-//			pkt.y1 = m_PreCheckPos.y;
-//			pkt.z1 = m_PreCheckPos.z;
-//			pkt.x = pos.x;
-//			pkt.y = pos.y;
-//			pkt.z = pos.z;
-//			pCaster->SendPacket(&pkt);
-//		}
-//#endif
-
 //		if (pCaster->RayCast(m_PreCheckPos, pos))
 //		{
 //			if (hitAvatarID != -1)
@@ -359,89 +332,6 @@ namespace Galaxy
 
 //		return false;
 //	}
-
-//	void GSkillProjectile::DetonateProjectile(GNodeAvatar* pCaster)
-//{
-//    if (IsDestroy())
-//        return;
-
-//    if (!m_pSkillData)
-//        return;
-
-//    if (m_pSkillData->IsBulletHitEffect())
-//    {
-//        ProcessEffect(pCaster);
-//    }
-//    m_bTimeOut = false;
-//    GSkillProjectile::KillProjectile(pCaster);
-//}
-
-//void GSkillProjectile::KillProjectile(GNodeAvatar* pCaster)
-//{
-//    if (IsDestroy())
-//        return;
-
-//    m_bDestroy = true;
-
-//    //子弹产生死亡事件
-//    if (m_pSkillData && m_pSkillData->IsBulletNotify() && pCaster && pCaster->GetSkillComponent())
-//    {
-//        pCaster->GetSkillComponent()->PushTriggerNotify(m_pSkillData->m_nDataID, m_TargetInfo.m_nTargetID, NotifyType_Bullet, TriggerNotify_BulletDead, 0, &m_TargetInfo.m_vSrcPos, &m_TargetInfo.m_vTarPos, &m_TargetInfo.m_vAimDir);
-//    }
-//}
-
-//void GSkillProjectile::DrawPos(GNodeAvatar & Caster, const Vector3 & vec3)
-//{
-//# ifdef _DEBUG
-//    {
-//        GPacketDrawLine posPkt;
-//        posPkt.x1 = vec3.x;
-//        posPkt.y1 = vec3.y;
-//        posPkt.z1 = vec3.z;
-//        posPkt.x = m_PreCheckPos.x;
-//        posPkt.y = m_PreCheckPos.y;
-//        posPkt.z = m_PreCheckPos.z;
-//        Caster.SendPacket(&posPkt);
-//    }
-//    if (!m_pSkillData)
-//        return;
-//    //if (SkillArea_Sphere == m_pSkillData->GetValue(MSV_AreaLogic))
-//    //{
-//    //    GPacketDrawSphere pktSphere;
-//    //    f32 fRadius = m_pSkillData->GetValue(MSV_AreaParam1) / 10.0f;
-//    //    if (fRadius < 0.01)
-//    //        fRadius = 0.5;
-//    //    pktSphere.radius = fRadius;
-//    //    pktSphere.x = vec3.x;
-//    //    pktSphere.y = vec3.y;
-//    //    pktSphere.z = vec3.z;
-//    //    pktSphere.r = 0;
-//    //    pktSphere.g = 255;
-//    //    pktSphere.b = 0;
-//    //    Caster.SendPacket(&pktSphere);
-//    //}
-//    //if (SkillArea_Rect == m_pSkillData->GetValue(MSV_AreaLogic))
-//    //{
-//    //    GPacketDrawBox pktBox;
-//    //    pktBox.x = vec3.x;
-//    //    pktBox.y = vec3.y;
-//    //    pktBox.z = vec3.z;
-//    //    f32 minDis = m_pSkillData->GetValue(MSV_AreaParam1) / 10.0f;
-//    //    f32 maxDis = m_pSkillData->GetValue(MSV_AreaParam2) / 10.0f;
-//    //    Vector3 dir = m_TargetInfo.m_vAimDir;
-//    //    Vector3 minPos = vec3 + dir * minDis;
-//    //    Vector3 maxPos = vec3 + dir * maxDis;
-//    //    f32 len = minPos.GetDistance(maxPos);
-//    //    pktBox.dx = dir.x;
-//    //    pktBox.dy = dir.y;
-//    //    pktBox.dz = dir.z;
-//    //    pktBox.l = len;
-//    //    pktBox.w = m_pSkillData->GetValue(MSV_AreaParam3) / 10.0f;
-//    //    pktBox.h = 3.0f;    //
-//    //    Caster.SendPacket(&pktBox);
-//    //}
-//#endif // _DEBUG
-//}
 
 //    //////////////////////////////////////////////////////////////////////////
 //    //追踪子弹

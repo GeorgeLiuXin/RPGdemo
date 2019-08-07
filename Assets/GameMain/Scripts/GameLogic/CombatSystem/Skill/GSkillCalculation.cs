@@ -133,18 +133,20 @@ namespace Galaxy
 			float fDFR = 0.1f;
 			float fRandom = Random.Range(1 - fDFR, 1 + fDFR);
 			float fTotalDamage = Mathf.Max(0, fDamage * fRandom);
-			////造成的伤害 抛出事件，在skillcom完成修复 todo
-			//if(m_pCaster->GetSkillComponent())
-			//{
-			//	m_pCaster->GetSkillComponent()->PushTriggerNotifyEffect(m_pSkillData->m_nDataID, m_pTarget->GetAvatarID(), NotifyType_MakeDamage, nEffectType, &fTotalDamage);
-			//}
-			
-			////承受的伤害
-			//if(m_pTarget->GetSkillComponent())
-			//{
-			//	m_pTarget->GetSkillComponent()->PushTriggerNotifyEffect(m_pSkillData->m_nDataID, m_pCaster->GetAvatarID(), NotifyType_TakeDamage, nEffectType, &fTotalDamage);
-			//}
-			
+			//造成的伤害
+			if(m_pCaster.SkillCom)
+			{
+				m_pCaster.SkillCom.PushTriggerNotifyEffect(m_pSkillData.Id, m_pTarget.Id, 
+					(int)eTriggerNotifyType.NotifyType_MakeDamage, nEffectType, &fTotalDamage);
+			}
+
+			//承受的伤害
+			if(m_pTarget.SkillCom)
+			{
+				m_pTarget.SkillCom.PushTriggerNotifyEffect(m_pSkillData.Id, m_pCaster.Id,
+					(int)eTriggerNotifyType.NotifyType_TakeDamage, nEffectType, &fTotalDamage);
+			}
+
 			if(fTotalDamage >= 1.0f)
 			{
 				fEffectValue = fTotalDamage;

@@ -1,20 +1,21 @@
 ﻿using UnityEngine;
+using GameFramework;
 
 namespace Galaxy
 {
 	/// <summary>
 	/// 触发技能相关检查
 	/// </summary>
-	public class GTriggerNotify
+	public class GTriggerNotify : IReference
 	{
-		int m_nDataID;
-		int m_nTargetID;
-		int m_nType;
-		int m_nFlag;
-		int m_nValue;
-		Vector3 m_vSrcPos;
-		Vector3 m_vTarPos;
-		Vector3 m_vDir;
+		public int m_nDataID;
+		public int m_nTargetID;
+		public int m_nType;
+		public int m_nFlag;
+		public float m_nValue;
+		public Vector3 m_vSrcPos;
+		public Vector3 m_vTarPos;
+		public Vector3 m_vDir;
 
 		public GTriggerNotify()
 		{
@@ -128,6 +129,18 @@ namespace Galaxy
 			float nRand = Random.Range(0.0f, 1.0f);
 			return (nProbalitity >= nRand);
 		}
+
+		public virtual void Clear()
+		{
+			m_nDataID = 0;
+			m_nTargetID = 0;
+			m_nType = 0;
+			m_nFlag = 0;
+			m_nValue = 0;
+			m_vSrcPos = default(Vector3);
+			m_vTarPos = default(Vector3);
+			m_vDir = default(Vector3);
+		}
 	}
 
 	/// <summary>
@@ -147,7 +160,7 @@ namespace Galaxy
 	public class GTriggerNotifyEffect : GTriggerNotify
 	{
 		//需要修正的值
-		public float m_pValue;
+		public float* m_pValue;
 
 		public override eNotifyObject GetNotifyType()
 		{

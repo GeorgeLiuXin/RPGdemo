@@ -16,10 +16,10 @@ namespace Galaxy
 	public abstract class GSkillAreaLogic
 	{
 		public abstract List<Avatar> GetTargetList(DRSkillData pSkillData,
-			Avatar pCaster, GTargetInfo sTarInfo, List<int> vExcludeList);
+			Avatar pCaster, GTargetInfo sTarInfo, HashSet<int> vExcludeList);
 
 		protected bool TryAddTarget(DRSkillData pSkillData, Avatar pCaster,
-			Avatar pTarget, List<int> vExcludeList)
+			Avatar pTarget, HashSet<int> vExcludeList)
 		{
 			if(pSkillData == null || !pCaster || !pTarget)
 				return false;
@@ -88,7 +88,7 @@ namespace Galaxy
 	public class GSkillAreaSingelton : GSkillAreaLogic
 	{
 		public override List<Avatar> GetTargetList(DRSkillData pSkillData,
-			Avatar pCaster, GTargetInfo sTarInfo, List<int> vExcludeList)
+			Avatar pCaster, GTargetInfo sTarInfo, HashSet<int> vExcludeList)
 		{
 			List<Avatar> vTargetList = new List<Avatar>();
 			if(pSkillData == null || !pCaster)
@@ -110,7 +110,7 @@ namespace Galaxy
 	public class GSkillAreaSphere : GSkillAreaLogic
 	{
 		public override List<Avatar> GetTargetList(DRSkillData pSkillData,
-			Avatar pCaster, GTargetInfo sTarInfo, List<int> vExcludeList)
+			Avatar pCaster, GTargetInfo sTarInfo, HashSet<int> vExcludeList)
 		{
 			List<Avatar> vTargetList = new List<Avatar>();
 			if(pSkillData == null || !pCaster)
@@ -164,7 +164,7 @@ namespace Galaxy
 	public class GSkillAreaSector : GSkillAreaLogic
 	{
 		public override List<Avatar> GetTargetList(DRSkillData pSkillData,
-			Avatar pCaster, GTargetInfo sTarInfo, List<int> vExcludeList)
+			Avatar pCaster, GTargetInfo sTarInfo, HashSet<int> vExcludeList)
 		{
 			List<Avatar> vTargetList = new List<Avatar>();
 			if(pSkillData == null || !pCaster)
@@ -217,7 +217,7 @@ namespace Galaxy
 	public class GSkillAreaRing : GSkillAreaLogic
 	{
 		public override List<Avatar> GetTargetList(DRSkillData pSkillData,
-			Avatar pCaster, GTargetInfo sTarInfo, List<int> vExcludeList)
+			Avatar pCaster, GTargetInfo sTarInfo, HashSet<int> vExcludeList)
 		{
 			List<Avatar> vTargetList = new List<Avatar>();
 			if(pSkillData == null || !pCaster)
@@ -270,7 +270,7 @@ namespace Galaxy
 	public class GSkillAreaRect : GSkillAreaLogic
 	{
 		public override List<Avatar> GetTargetList(DRSkillData pSkillData,
-			Avatar pCaster, GTargetInfo sTarInfo, List<int> vExcludeList)
+			Avatar pCaster, GTargetInfo sTarInfo, HashSet<int> vExcludeList)
 		{
 			List<Avatar> vTargetList = new List<Avatar>();
 			if(pSkillData == null || !pCaster)

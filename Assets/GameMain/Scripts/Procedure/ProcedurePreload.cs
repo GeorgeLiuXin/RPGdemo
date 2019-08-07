@@ -25,6 +25,7 @@ namespace Galaxy
 			"SkillAValue",
 			"Animation",
 			"SkillData",
+			"CDdefine",
 		};
 
         private Dictionary<string, bool> m_LoadedFlag = new Dictionary<string, bool>();

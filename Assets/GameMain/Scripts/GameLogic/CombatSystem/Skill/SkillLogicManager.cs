@@ -80,81 +80,69 @@ namespace Galaxy
 			return null;
 		}
 
-		//GSkillProjectile CreateProjectile(int nType)
-		//{
-		//	switch(nType)
-		//	{
-		//		case (int)eProjectileType.Projectile_Track:
-		//			return FACTORY_NEWOBJ(GSkillProjectile_Track);
-		//		case (int)eProjectileType.Projectile_Trap:
-		//			return FACTORY_NEWOBJ(GSkillProjectile_Trap);
-		//	}
-		//	return null;
-		//}
+		public GSkillProjectile CreateProjectile(int nType)
+		{
+			switch(nType)
+			{
+				case (int)eProjectileType.Projectile_Track:
+					return ReferencePool.Acquire<GSkillProjectile_Track>();
+				case (int)eProjectileType.Projectile_Trap:
+					return ReferencePool.Acquire<GSkillProjectile_Trap>();
+			}
+			return null;
+		}
 
+		//检查目标
+		public bool CheckTarget(DRSkillData pSkillData, Avatar pCaster, GTargetInfo sTarInfo)
+		{
+			if(pSkillData == null || !pCaster)
+				return false;
+
+			//检查目标条件
+			if(pSkillData.IsTargetAvatar())
+			{
+				if(!CheckTarget(pSkillData, pCaster, sTarInfo.m_nTargetID))
+					return false;
+			}
+			else if(pSkillData.IsTargetPos())
+			{
+				float fRange = pSkillData.MSV_Range;
+				if(fRange > 0)
+				{
+					float fDistance = pCaster.GetPos().Distance2D(sTarInfo.m_vTarPos);
+					if(fDistance > fRange + 0.5f)
+						return false;
+				}
+			}
+
+			return true;
+		}
+
+		public bool CheckTarget(DRSkillData pSkillData, Avatar pCaster, int nTargetID)
+		{
+			Avatar pTarget = GameEntry.Entity.GetGameEntity(nTargetID) as Avatar;
+			if(!pTarget)
+				return false;
+			
+			int nTarCheck = pSkillData.MSV_TarCheck;
+			if(nTarCheck > 0)
+			{
+				//todo 条件检查组
+				//SDConditionParamAvatar sParam;
+				//sParam.ParamAvatar = pCaster;
+				//if(!GSKillConditionCheckManager::Instance().Check(nTarCheck, pTarget, &sParam))
+				//	return false;
+			}
+
+			float fRange = pSkillData.MSV_Range;
+			if(fRange > 0)
+			{
+				float fDistance = pCaster.GetPos().Distance2D(pTarget.GetPos());
+				if(fDistance > fRange + 0.5f)
+					return false;
+			}
+
+			return true;
+		}
 	}
 }
-
-////检查目标
-//bool GSkillLogicManager::CheckTarget(GSkillData* pSkillData, GNodeAvatar* pCaster, GSkillTargetInfo& sTarInfo)
-//{
-//    if (!pSkillData || !pCaster)
-//        return false;
-
-//    //检查目标条件
-//    if (pSkillData->IsTargetAvatar())
-//    {
-//        if (!CheckTarget(pSkillData, pCaster, sTarInfo.m_nTargetID))
-//            return false;
-//    }
-//    else if (pSkillData->IsTargetPos())
-//    {
-//        f32 fRange = pSkillData->GetFloatValue(MSV_Range);
-//        if (fRange > 0)
-//        {
-//            f32 fDistance = pCaster->GetPos().GetDistance(sTarInfo.m_vTarPos);
-//            if (fDistance > fRange + OffestRange)
-//                return false;
-//        }
-//    }
-
-//    return true;
-//}
-
-//bool GSkillLogicManager::CheckTarget(GSkillData* pSkillData, GNodeAvatar* pCaster, int32 nTargetID)
-//{
-//    GNodeAvatar* pTarget = pCaster->GetSceneAvatar(nTargetID);
-//    if (!pTarget)
-//        return false;
-
-//    //当前目标类型隐含的条件检查
-//    if (pSkillData->IsTargetOhterFriend())
-//    {
-//        if (!pCaster->CheckRelation(pTarget, ToFriend))
-//            return false;
-//    }
-//    if (pSkillData->IsTargetOhterEnemy())
-//    {
-//        if (!pCaster->CheckRelation(pTarget, ToEnemy))
-//            return false;
-//    }
-
-//    int32 nTarCheck = pSkillData->GetIntValue(MSV_TarCheck);
-//    if (nTarCheck > 0)
-//    {
-//        SDConditionParamAvatar sParam;
-//        sParam.ParamAvatar = pCaster;
-//        if (!GSKillConditionCheckManager::Instance().Check(nTarCheck, pTarget, &sParam))
-//            return false;
-//    }
-
-//    f32 fRange = pSkillData->GetFloatValue(MSV_Range);
-//    if (fRange > 0)
-//    {
-//        f32 fDistance = pCaster->GetPos().GetDistance(pTarget->GetPos());
-//        if (fDistance > fRange + OffestRange)
-//            return false;
-//    }
-
-//    return true;
-//}

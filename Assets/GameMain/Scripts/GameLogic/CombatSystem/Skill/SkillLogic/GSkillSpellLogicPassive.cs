@@ -20,18 +20,17 @@ namespace Galaxy
 			//m_pBuff = param.pBuff;
 			return true;
 		}
-
-		//todo 添加条件检查库
+		
 		protected bool PassiveProcessCheck()
 		{
 			if(!m_pOwner || m_pSkillData == null)
 				return false;
 
-			//GNodeAvatar* pCaster = GetCaster();
-			//if(!pCaster)
-			//	return false;
+			Avatar pCaster = GetCaster();
+			if(!pCaster)
+				return false;
 
-			////自身检查
+			////自身检查 todo 添加条件检查库
 			//int32 nSrvCheck = m_pSkillData.MSV_SrcCheck;
 			//if(nSrvCheck > 0)
 			//{
@@ -39,11 +38,11 @@ namespace Galaxy
 			//		return false;
 			//}
 
-			////目标检查
-			//if(!GSkillLogicManager::Instance().CheckTarget(m_pSkillData, pCaster, m_TargetInfo))
-			//{
-			//	return false;
-			//}
+			//目标检查
+			if(!GSkillLogicManager.Instance.CheckTarget(m_pSkillData, pCaster, m_TargetInfo))
+			{
+				return false;
+			}
 			return true;
 		}
 	}

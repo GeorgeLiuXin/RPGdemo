@@ -1,6 +1,6 @@
 ﻿//------------------------------------------------------------
 // 此文件由工具自动生成，请勿直接修改。
-// 生成时间：2019-08-07 23:11:25.992
+// 生成时间：2019-08-07 23:11:26.062
 //------------------------------------------------------------
 
 using GameFramework;
@@ -14,14 +14,14 @@ using UnityGameFramework.Runtime;
 namespace Galaxy
 {
     /// <summary>
-    /// 场景配置表。
+    /// CD表。
     /// </summary>
-    public class DRScene : DataRowBase
+    public class DRCDdefine : DataRowBase
     {
         private int m_Id = 0;
 
         /// <summary>
-        /// 获取场景编号。
+        /// 获取CD组编号。
         /// </summary>
         public override int Id
         {
@@ -32,45 +32,36 @@ namespace Galaxy
         }
 
         /// <summary>
-        /// 获取资源名称。
+        /// 获取CDAttr。
         /// </summary>
-        public string AssetName
+        public int CDAttr
         {
             get;
             private set;
         }
 
         /// <summary>
-        /// 获取背景音乐编号。
+        /// 获取CD时间。
         /// </summary>
-        public int BackgroundMusicId
+        public int CDTime
         {
             get;
             private set;
         }
 
         /// <summary>
-        /// 获取起始点X。
+        /// 获取CD次数。
         /// </summary>
-        public float PosX
+        public int CDCount
         {
             get;
             private set;
         }
 
         /// <summary>
-        /// 获取起始点Y。
+        /// 获取公共CD。
         /// </summary>
-        public float PosY
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// 获取起始点Z。
-        /// </summary>
-        public float PosZ
+        public int CDCommon
         {
             get;
             private set;
@@ -89,11 +80,10 @@ namespace Galaxy
             index++;
             m_Id = int.Parse(columnTexts[index++]);
             index++;
-            AssetName = columnTexts[index++];
-            BackgroundMusicId = int.Parse(columnTexts[index++]);
-            PosX = float.Parse(columnTexts[index++]);
-            PosY = float.Parse(columnTexts[index++]);
-            PosZ = float.Parse(columnTexts[index++]);
+            CDAttr = int.Parse(columnTexts[index++]);
+            CDTime = int.Parse(columnTexts[index++]);
+            CDCount = int.Parse(columnTexts[index++]);
+            CDCommon = int.Parse(columnTexts[index++]);
 
             GeneratePropertyArray();
             return true;
@@ -107,11 +97,10 @@ namespace Galaxy
                 using (BinaryReader binaryReader = new BinaryReader(memoryStream, Encoding.UTF8))
                 {
                     m_Id = binaryReader.ReadInt32();
-                    AssetName = binaryReader.ReadString();
-                    BackgroundMusicId = binaryReader.ReadInt32();
-                    PosX = binaryReader.ReadSingle();
-                    PosY = binaryReader.ReadSingle();
-                    PosZ = binaryReader.ReadSingle();
+                    CDAttr = binaryReader.ReadInt32();
+                    CDTime = binaryReader.ReadInt32();
+                    CDCount = binaryReader.ReadInt32();
+                    CDCommon = binaryReader.ReadInt32();
                 }
             }
 

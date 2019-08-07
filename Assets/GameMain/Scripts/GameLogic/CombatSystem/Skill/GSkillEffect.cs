@@ -55,18 +55,24 @@ namespace Galaxy
 			gameEvent.EffectType = pSkillData.MSV_EffectType;
 			gameEvent.EffectValue = 0;
 			sCalculation.CalculationDamage(ref gameEvent.EffectType,ref gameEvent.EffectValue);
-			
-			//////////////////////////////////////////////////////////////////////////
-			//产生效果事件 todo 技能组件添加完后修复
-			//if(pCaster->GetSkillComponent())
-			//{
-			//	pCaster->GetSkillComponent()->PushTriggerNotify(pSkillData->m_nDataID, pTarget->GetAvatarID(), NotifyType_Damage, pkt.effectType, pkt.effectValue, &sTarInfo.m_vSrcPos, &sTarInfo.m_vTarPos, &sTarInfo.m_vAimDir);
-			//}
 
-			//if(pTarget->GetSkillComponent())
-			//{
-			//	pTarget->GetSkillComponent()->PushTriggerNotify(pSkillData->m_nDataID, pCaster->GetAvatarID(), NotifyType_OnDamage, pkt.effectType, pkt.effectValue, &sTarInfo.m_vSrcPos, &sTarInfo.m_vTarPos, &sTarInfo.m_vAimDir);
-			//}
+			//////////////////////////////////////////////////////////////////////////
+			//产生效果事件
+			if(pCaster.SkillCom)
+			{
+				pCaster.SkillCom.PushTriggerNotify(pSkillData.Id, pTarget.Id,
+					(int)eTriggerNotifyType.NotifyType_Damage, gameEvent.EffectType, 
+					gameEvent.EffectValue, sTarInfo.m_vSrcPos, 
+					sTarInfo.m_vTarPos, sTarInfo.m_vAimDir);
+			}
+
+			if(pTarget.SkillCom)
+			{
+				pTarget.SkillCom.PushTriggerNotify(pSkillData.Id, pCaster.Id,
+					(int)eTriggerNotifyType.NotifyType_OnDamage, gameEvent.EffectType,
+					gameEvent.EffectValue, sTarInfo.m_vSrcPos,
+					sTarInfo.m_vTarPos, sTarInfo.m_vAimDir);
+			}
 			//产生效果事件
 			//////////////////////////////////////////////////////////////////////////
 
@@ -101,16 +107,23 @@ namespace Galaxy
 			sCalculation.CalculationHeal(ref gameEvent.EffectType, ref gameEvent.EffectValue);
 
 			//////////////////////////////////////////////////////////////////////////
-			////产生效果事件 todo 技能组件添加完后修复
-			//if(pCaster->GetSkillComponent())
-			//{
-			//	pCaster->GetSkillComponent()->PushTriggerNotify(pSkillData->m_nDataID, pTarget->GetAvatarID(), NotifyType_Heal, pkt.effectType, pkt.effectValue, &sTarInfo.m_vSrcPos, &sTarInfo.m_vTarPos, &sTarInfo.m_vAimDir);
-			//}
-			//if(pTarget->GetSkillComponent())
-			//{
-			//	pTarget->GetSkillComponent()->PushTriggerNotify(pSkillData->m_nDataID, pCaster->GetAvatarID(), NotifyType_OnHeal, pkt.effectType, pkt.effectValue, &sTarInfo.m_vSrcPos, &sTarInfo.m_vTarPos, &sTarInfo.m_vAimDir);
-			//}
-			////产生效果事件
+			//产生效果事件
+			if(pCaster.SkillCom)
+			{
+				pCaster.SkillCom.PushTriggerNotify(pSkillData.Id, pTarget.Id,
+					(int)eTriggerNotifyType.NotifyType_Heal, gameEvent.EffectType,
+					gameEvent.EffectValue, sTarInfo.m_vSrcPos,
+					sTarInfo.m_vTarPos, sTarInfo.m_vAimDir);
+			}
+
+			if(pTarget.SkillCom)
+			{
+				pTarget.SkillCom.PushTriggerNotify(pSkillData.Id, pCaster.Id,
+					(int)eTriggerNotifyType.NotifyType_Heal, gameEvent.EffectType,
+					gameEvent.EffectValue, sTarInfo.m_vSrcPos,
+					sTarInfo.m_vTarPos, sTarInfo.m_vAimDir);
+			}
+			//产生效果事件
 			//////////////////////////////////////////////////////////////////////////
 
 			//产生仇恨

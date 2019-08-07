@@ -213,12 +213,9 @@ namespace Galaxy
 
 			if(Owner == null)
 				return;
-
-			//TODO
+			
 			if(m_Animator.speed < 0.01f)
-			{
 				return;
-			}
 
 			m_motionData.fMotionTime -= fFrameTime;
 			if(m_motionData.fMotionTime < 0)

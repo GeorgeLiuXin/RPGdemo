@@ -321,9 +321,9 @@ namespace Galaxy
 		{
 			return this.MemberwiseClone();
 		}
-		public PlayerAValueData CloneData()
+		public SkillAValueData CloneData()
 		{
-			return Clone() as PlayerAValueData;
+			return Clone() as SkillAValueData;
 		}
 
 		public int GetIntValue(SkillAValueDefine define)

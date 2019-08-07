@@ -97,7 +97,7 @@ namespace Galaxy
 			m_fCurEffectTime = m_fEffectTime - m_fFirstEffectTime;
 		}
 
-		private bool SetFSMState()
+		public override bool SetFSMState()
 		{
 			if(!m_pOwner)
 				return false;
@@ -107,7 +107,13 @@ namespace Galaxy
 			return m_pOwner.SetFsmState(this, param);
 		}
 
-		protected void Finish()
+		public override bool IsLock()
+		{
+			return m_fLockTime > 0;
+		}
+
+		//todo 技能逻辑finish接口
+		public void Finish()
 		{
 
 		}
@@ -124,28 +130,28 @@ namespace Galaxy
 		{
 			if(m_pSkillData == null)
 				return false;
+			
+			//效果阶段消耗逻辑
+			if(!m_bCosted && m_pSkillData.IsEffectStateCost())
+			{
+				Avatar pCaster = GetCaster();
+				if(!pCaster)
+				{
+					Finish();
+					return false;
+				}
+				if(!m_pOwner.SkillCom 
+					|| !m_pOwner.SkillCom.CheckCost(m_pSkillData) 
+					|| !m_pOwner.SkillCom.CheckCD(m_pSkillData))
+				{
+					Finish();
+					return false;
+				}
 
-			//todo 技能消耗
-			////效果阶段消耗逻辑
-			//if(!m_bCosted && m_pSkillData->IsEffectStateCost())
-			//{
-			//	Avatar pCaster = GetCaster();
-			//	if(!pCaster)
-			//	{
-			//		Finish();
-			//		return false;
-			//	}
-			//	GNodeSkillComponent* pComp = pCaster->GetSkillComponent();
-			//	if(!pComp || !pComp->CheckCost(m_pSkillData) || !pComp->CheckCD(m_pSkillData))
-			//	{
-			//		Finish();
-			//		return false;
-			//	}
-
-			//	pComp->DoCost(m_pSkillData);
-			//	pComp->StartCD(m_pSkillData, false);
-			//	SetCosted();
-			//}
+				m_pOwner.SkillCom.DoCost(m_pSkillData);
+				m_pOwner.SkillCom.StartCD(m_pSkillData, false);
+				SetCosted();
+			}
 
 			return true;
 		}

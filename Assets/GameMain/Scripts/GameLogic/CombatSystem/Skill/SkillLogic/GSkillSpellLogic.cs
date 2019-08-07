@@ -81,12 +81,31 @@ namespace Galaxy
 			Reset();
 		}
 
+		public virtual bool IsLock()
+		{
+			return false;
+		}
+
+		public virtual bool SetFSMState()
+		{
+			return false;
+		}
+		public virtual bool ProcessTrigger(GTriggerNotify pNotify)
+		{
+			return false;
+		}
+
+		public bool IsFinished()
+		{
+			return m_bFinish;
+		}
+
 		public SkillAValueData GetSkillAValue()
 		{
 			return m_AValue;
 		}
 
-		protected void ResetSkillAValue()
+		public void ResetSkillAValue()
 		{
 			m_AValue = AValueManager.Instance.GetSkillAValue();
 			UpdateAValueByInstance();

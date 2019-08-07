@@ -10,7 +10,7 @@ namespace Galaxy
     /// </summary>
     public class GSkillSpellLogic_Trigger : GSkillSpellLogic_Passive
 	{
-		public bool ProcessTrigger(GTriggerNotify pNotify)
+		public override bool ProcessTrigger(GTriggerNotify pNotify)
 		{
 			//检查触发条件
 			if(!CheckNotify(pNotify))
@@ -27,16 +27,18 @@ namespace Galaxy
 
 			//产生触发效果
 			OnTrigger(pNotify);
-			//产生触发事件 todo 抛出事件
-			//if(m_pSkillData && m_pSkillData->IsTriggerTriggerNotify())
-			//{
-			//	GNodeAvatar* pCaster = GetCaster();
-			//	if(pCaster && pCaster->GetSkillComponent())
-			//	{
-			//		GetTarget();
-			//		pCaster->GetSkillComponent()->PushTriggerNotify(m_pSkillData->m_nDataID, m_TargetInfo.m_nTargetID, NotifyType_Trigger, 0, 0, &pNotify->m_vSrcPos, &pNotify->m_vTarPos, &pNotify->m_vDir);
-			//	}
-			//}
+			//产生触发事件
+			if(m_pSkillData != null && m_pSkillData.IsTriggerTriggerNotify())
+			{
+				Avatar pCaster = GetCaster();
+				if(pCaster != null && pCaster.SkillCom)
+				{
+					GetTarget();
+					pCaster.SkillCom.PushTriggerNotify(m_pSkillData.Id,
+						m_TargetInfo.m_nTargetID, (int)eTriggerNotifyType.NotifyType_Trigger,
+						0, 0, pNotify.m_vSrcPos, pNotify.m_vTarPos, pNotify.m_vDir);
+				}
+			}
 
 			return true;
 		}
@@ -46,48 +48,41 @@ namespace Galaxy
 			if(!m_pOwner || m_pSkillData == null || pNotify == null)
 				return false;
 
-			//todo 添加技能/CD组件和消耗后补上
 			Avatar pCaster = GetCaster();
-			//if(!pCaster || !pCaster->GetSkillComponent())
-			//	return false;
+			if(!pCaster || !pCaster.SkillCom)
+				return false;
 
-			//GNodeAvatar* pTarget = NULL;
+			Avatar pTarget = null;
+			if(m_pSkillData.IsTargetSelfOnly())
+			{
+				pTarget = pCaster;
+				m_TargetInfo.m_nTargetID = pCaster.Id;
+				m_TargetInfo.m_vSrcPos = pCaster.GetPos();
+				m_TargetInfo.m_vTarPos = pCaster.GetPos();
+				m_TargetInfo.m_vAimDir = pCaster.GetDir();
+			}
+			else
+			{
+				pTarget = GameEntry.Entity.GetGameEntity(pNotify.m_nTargetID) as Avatar;
+				m_TargetInfo.m_nTargetID = pNotify.m_nTargetID;
+				m_TargetInfo.m_vTarPos = pNotify.m_vTarPos;
+				m_TargetInfo.m_vSrcPos = pNotify.m_vSrcPos;
+				if(pNotify.m_vDir == default(Vector3))
+				{
+					m_TargetInfo.m_vAimDir = m_TargetInfo.m_vTarPos - m_TargetInfo.m_vSrcPos;
+				}
+				else
+				{
+					m_TargetInfo.m_vAimDir = pNotify.m_vDir;
+				}
+				m_TargetInfo.m_vAimDir.Normalize2D();
+			}
 
-			//if(m_pSkillData->IsTargetSelfOnly())
-			//{
-			//	pTarget = pCaster;
-			//	m_TargetInfo.m_nTargetID = pCaster->GetAvatarID();
-			//	m_TargetInfo.m_vSrcPos = pCaster->GetPos();
-			//	m_TargetInfo.m_vTarPos = pCaster->GetPos();
-			//	m_TargetInfo.m_vAimDir = pCaster->GetDir();
-			//}
-			//else
-			//{
-			//	pTarget = m_pOwner->GetSceneAvatar(pNotify->m_nTargetID);
-			//	m_TargetInfo.m_nTargetID = pNotify->m_nTargetID;
-			//	m_TargetInfo.m_vTarPos = pNotify->m_vTarPos;
-			//	m_TargetInfo.m_vSrcPos = pNotify->m_vSrcPos;
-			//	if(pNotify->m_vDir.IsZeroFast())
-			//	{
-			//		m_TargetInfo.m_vAimDir = m_TargetInfo.m_vTarPos - m_TargetInfo.m_vSrcPos;
-			//	}
-			//	else
-			//	{
-			//		m_TargetInfo.m_vAimDir = pNotify->m_vDir;
-			//	}
-			//	m_TargetInfo.m_vAimDir.z = 0;
-			//	m_TargetInfo.m_vAimDir.normalize();
-			//}
-
-			//GCDComponent* pCDComponent = m_pOwner->GetCDComponent();
-			//if(!pCDComponent || pCDComponent->CheckCD(m_pSkillData.MSV_CDGroup))
-			//{
-			//	return false;
-			//}
-
-			////检查消耗
-			//if(!pCaster->GetSkillComponent()->CheckCost(m_pSkillData))
-			//	return false;
+			//检查cd与消耗
+			if(!m_pOwner.CDCom || m_pOwner.CDCom.CheckCD(m_pSkillData.MSV_CDGroup))
+				return false;
+			if(!pCaster.SkillCom.CheckCost(m_pSkillData))
+				return false;
 
 			if(!pNotify.CheckTrigger(pCaster, m_pSkillData))
 				return false;
@@ -120,18 +115,17 @@ namespace Galaxy
 			//}
 
 			//消耗
-			//Avatar pCaster = GetCaster();
-			//if(pCaster && pCaster->GetSkillComponent())
-			//{
-			//	pCaster->GetSkillComponent()->DoCost(m_pSkillData);
-			//}
+			Avatar pCaster = GetCaster();
+			if(pCaster!=null && pCaster.SkillCom)
+			{
+				pCaster.SkillCom.DoCost(m_pSkillData);
+			}
 
 			//cd
-			//GCDComponent* pCDComponent = m_pOwner->GetCDComponent();
-			//if(pCDComponent)
-			//{
-			//	pCDComponent->StartCD(nCDGroup, nCDTime, true);
-			//}
+			if(pCaster != null && pCaster.CDCom)
+			{
+				pCaster.CDCom.StartCD(m_pSkillData.MSV_CDGroup, m_pSkillData.MSV_CDTime);
+			}
 		}
 
 		public void OnTrigger(GTriggerNotify pNotify)
