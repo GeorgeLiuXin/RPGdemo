@@ -50,9 +50,8 @@ namespace Galaxy
 				return 0;
 
 			float fValue = m_SkillAValue.GetFloatValue(SkillAValueDefine.ad_skill_p);
-			//todo 技能属性修复
-			////计算攻击
-			//if(m_pSkillData->IsCalculationAtk())
+			//计算攻击
+			if(m_pSkillData.IsCalculationAtk())
 			{
 				fValue += Mathf.Max(m_CasterAValue.GetFloatValue(AvatarAValueDefine.atk_d)
 					* (1 + (float)m_CasterAValue.GetPercentValue(AvatarAValueDefine.atk_d_r)), 1);

@@ -5,16 +5,16 @@ using UnityEngine;
 
 namespace Galaxy
 {
-    /// <summary>
-    /// 技能逻辑管理器
-    /// </summary>
-    public class SkillLogicManager
-    {
+	/// <summary>
+	/// 技能逻辑管理器
+	/// </summary>
+	public class GSkillLogicManager : Singleton<GSkillLogicManager>
+	{
 		public GSkillLauncher[] m_vLauncherLogic;
 		public GSkillAreaLogic[] m_vAreaLogic;
 		public GSkillEffect[] m_vEffectLogic;
 
-		public SkillLogicManager()
+		public GSkillLogicManager()
 		{
 			///////////////////////////////////////////////////////
 			//技能发动逻辑
@@ -38,7 +38,7 @@ namespace Galaxy
 			m_vEffectLogic[(int)eSkillEffectLogic.SkillEffect_Heal] = new GSkillEffect_Heal();
 		}
 		
-		GSkillLauncher GetLauncherLogic(int nLogicType)
+		public GSkillLauncher GetLauncherLogic(int nLogicType)
 		{
 			if(nLogicType >= (int)eSkillLauncherType.SkillLauncher_Size
 				|| nLogicType <= 0)
@@ -46,7 +46,7 @@ namespace Galaxy
 			return m_vLauncherLogic[nLogicType];
 		}
 
-		GSkillAreaLogic GetAreaLogic(int nLogicType)
+		public GSkillAreaLogic GetAreaLogic(int nLogicType)
 		{
 			if(nLogicType >= (int)eSkillAreaLogic.SkillArea_Max
 				|| nLogicType <= 0)
@@ -54,15 +54,15 @@ namespace Galaxy
 			return m_vAreaLogic[nLogicType];
 		}
 
-		GSkillEffect GetEffectLogic(int nLogicType)
+		public GSkillEffect GetEffectLogic(int nLogicType)
 		{
 			if(nLogicType >= (int)eSkillEffectLogic.SkillEffect_Size
 				|| nLogicType <= 0)
 				return null;
 			return m_vEffectLogic[nLogicType];
 		}
-		
-		GSkillSpellLogic CreateSpellLogic(int nLogicID)
+
+		public GSkillSpellLogic CreateSpellLogic(int nLogicID)
 		{
 			switch(nLogicID)
 			{

@@ -1,4 +1,63 @@
-﻿//using System;
+﻿using System.Collections.Generic;
+
+namespace Galaxy
+{
+	//暂时 之后修改为slot修正后修复为管理所有技能数据
+	public class GSkillDataManager : Singleton<GSkillDataManager>
+	{
+		private bool m_bInit;
+		private Dictionary<int, List<int>> m_SubSkillDict;
+
+		public GSkillDataManager()
+		{
+			m_bInit = false;
+			m_SubSkillDict = new Dictionary<int, List<int>>();
+		}
+
+		public void InitData()
+		{
+			if(m_bInit)
+				return;
+			List<DRSkillData> list = new List<DRSkillData>();
+			GameEntry.DataTable.GetDataTable<DRSkillData>().GetAllDataRows(list);
+			if(list == null || list.Count == 0)
+				return;
+			foreach(var item in list)
+			{
+				if(m_SubSkillDict.ContainsKey(item.MSV_BaseSkillID))
+				{
+					m_SubSkillDict[item.MSV_BaseSkillID].Add(item.Id);
+				}
+				else
+				{
+					List<int> subList = new List<int>();
+					subList.Add(item.Id);
+					m_SubSkillDict.Add(item.MSV_BaseSkillID, subList);
+				}
+			}
+			m_bInit = true;
+		}
+
+		public void ClearData()
+		{
+			m_SubSkillDict.Clear();
+			m_bInit = false;
+		}
+
+		public List<int> GetSubSkillList(int nSkillID)
+		{
+			if(m_SubSkillDict.ContainsKey(nSkillID))
+			{
+				return m_SubSkillDict[nSkillID];
+			}
+			return null;
+		}
+	}
+
+}
+
+#region 旧数据结构
+//using System;
 //using System.Collections.Generic;
 //using System.Linq;
 //using System.Text;
@@ -16,7 +75,7 @@
 //            m_SkillSlotsModifyDict = new ModifyDict();
 //            m_SubSkillDict = new Dictionary<int, List<int>>();
 //        }
-        
+
 //        public void OnLoadSkillData(ConfigData data)
 //        {
 //            SkillData skillData = new SkillData();
@@ -95,3 +154,4 @@
 //        }
 //    }
 //}
+#endregion

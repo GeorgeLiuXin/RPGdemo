@@ -144,6 +144,27 @@ namespace Galaxy
 			Log.Error("属性集 '{0}' 设置失败!", m_DataID);
 			return;
 		}
+
+		public void Merge(AValueItem rhs)
+		{
+			if(m_DataID != rhs.m_DataID || m_ValueID != rhs.m_ValueID)
+			{
+				Log.Error("属性集合并时参数不一致! lhs:'{0}'  '{1}' rhs:'{2}'  '{3}' ");
+				return;
+			}
+			switch(m_ValueID)
+			{
+				case AValueType.AValueType_Int:
+					m_IValue = rhs.m_IValue;
+					return;
+				case AValueType.AValueType_Float:
+					m_FValue = rhs.m_FValue;
+					return;
+				case AValueType.AValueType_Percent:
+					m_Percent = rhs.m_Percent;
+					return;
+			}
+		}
 	}
 
 	public class AValueManager : Singleton<AValueManager>
@@ -186,6 +207,20 @@ namespace Galaxy
 		{
 			return this.MemberwiseClone();
 		}
+		public PlayerAValueData CloneData()
+		{
+			return Clone() as PlayerAValueData;
+		}
+		public void Merge(PlayerAValueData rhs)
+		{
+			foreach(var item in rhs)
+			{
+				if(!ContainsKey(item.Key))
+					continue;
+				this[item.Key].Merge(item.Value);
+			}
+		}
+
 		public int GetIntValue(AvatarAValueDefine define)
 		{
 			if(define < 0 || define >= AvatarAValueDefine.size || !ContainsKey(define))
@@ -286,6 +321,11 @@ namespace Galaxy
 		{
 			return this.MemberwiseClone();
 		}
+		public PlayerAValueData CloneData()
+		{
+			return Clone() as PlayerAValueData;
+		}
+
 		public int GetIntValue(SkillAValueDefine define)
 		{
 			if(define < 0 || define >= SkillAValueDefine.size || !ContainsKey(define))

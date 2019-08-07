@@ -7,12 +7,13 @@ using UnityGameFramework.Runtime;
 
 namespace Galaxy
 {
-	public struct GSkillInitParam
+	public class GSkillInitParam
 	{
 		public Avatar m_pOwner;
 		public GTargetInfo m_TargetInfo;
 		public DRSkillData m_pSkillData;
 		//public GBuff buff;		//通过buff挂载的技能
+		//public int nSlots;		//技能修正槽位
 
 		public GSkillInitParam(Avatar pOwner, GTargetInfo targetInfo, DRSkillData pSkillData)
 		{
@@ -155,7 +156,7 @@ namespace Galaxy
 				m_pOwner : GameEntry.Entity.GetGameEntity(m_TargetInfo.m_nTargetID) as Avatar;
 		}
 
-		protected int GetSkillID()
+		public int GetSkillID()
 		{
 			return (m_pSkillData != null) ? m_pSkillData.Id : 0;
 		}
@@ -169,6 +170,20 @@ namespace Galaxy
 			//	pLauncher->Process(this, GetCaster());
 			//}
 		}
+
+		////todo 技能修正
+		//private void SetSkillSlots()
+		//{
+
+		//}
+		//private int GetSkillSlots()
+		//{
+
+		//}
+		//private void ClearSkillSlots()
+		//{
+
+		//}
 	}
 
 }

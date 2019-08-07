@@ -1,4 +1,55 @@
-﻿//using UnityEngine;
+﻿
+namespace Galaxy
+{
+	//临时方案 先整理流程，再开发技能修正
+	public static class DRSkillDataExtension
+	{
+		//技能类型检查
+		public static bool CheckSkillType(this DRSkillData data, int nSkillType) { return (data.MSV_SkillType & nSkillType) > 0; }
+		public static bool IsTemplateSkill(this DRSkillData data) { return CheckSkillType(data, (int)eSkillType.SkillType_Template); }
+		public static bool IsActiveSkill(this DRSkillData data) { return CheckSkillType(data, (int)eSkillType.SkillType_Active); }
+		public static bool IsTriggerSkill(this DRSkillData data) { return CheckSkillType(data, (int)eSkillType.SkillType_Trigger); }
+		public static bool IsBuffSkill(this DRSkillData data) { return CheckSkillType(data, (int)eSkillType.SkillType_Buff); }
+		public static bool IsPassiveSkill(this DRSkillData data) { return CheckSkillType(data, (int)eSkillType.SkillType_Passive) || IsTriggerSkill(data) || IsBuffSkill(data); }
+
+		//技能属性检查
+		public static bool CheckSkillAttr(this DRSkillData data, int nSkillAttr) { return (data.MSV_SkillAttr & nSkillAttr) > 0; }
+
+		public static bool IsEffectStateCost(this DRSkillData data) { return CheckSkillAttr(data, (int)eSkillAttr.SkillAttr_EffectStateCost); } //效果阶段产生消耗
+		public static bool IsAreaUseTarPos(this DRSkillData data) { return CheckSkillAttr(data, (int)eSkillAttr.SkillAttr_AreaUseTarPos); } //范围效果使用目标坐标
+		public static bool IsAreaIncludeSelf(this DRSkillData data) { return CheckSkillAttr(data, (int)eSkillAttr.SkillAttr_AreaIncludeSelf); } //范围效果包含自身
+		public static bool IsAreaAddExclude(this DRSkillData data) { return CheckSkillAttr(data, (int)eSkillAttr.SkillAttr_AreaAddExclude); } //范围效果排除重复目标
+		public static bool IsTriggerCommonCD(this DRSkillData data) { return CheckSkillAttr(data, (int)eSkillAttr.SkillAttr_TriggerCommonCD); } //触发共CD
+		public static bool IsTriggerRemoveBuff(this DRSkillData data) { return CheckSkillAttr(data, (int)eSkillAttr.SkillAttr_TriggerRemoveBuff); } //触发后移除Buff
+		public static bool IsTriggerRemoveLayer(this DRSkillData data) { return CheckSkillAttr(data, (int)eSkillAttr.SkillAttr_TriggerRemoveLayer); } //触发后减少Buff层数
+		public static bool IsTriggerTriggerNotify(this DRSkillData data) { return CheckSkillAttr(data, (int)eSkillAttr.SkillAttr_TriggerNotify); } //触发后产生触发事件
+		public static bool IsTriggerSkillNotify(this DRSkillData data) { return CheckSkillAttr(data, (int)eSkillAttr.SkillAttr_SkillNotify); } //产生技能施放事件
+		public static bool IsBulletPeriodEffect(this DRSkillData data) { return CheckSkillAttr(data, (int)eSkillAttr.SkillAttr_BulletPeriodEffect); } //子弹产生周期效果
+		public static bool IsBulletHitEffect(this DRSkillData data) { return CheckSkillAttr(data, (int)eSkillAttr.SkillAttr_BulletHitEffect); } //子弹产生命中效果
+		public static bool IsBulletHitNoRemove(this DRSkillData data) { return CheckSkillAttr(data, (int)eSkillAttr.SkillAttr_BulletHitNoRemove); } //子弹命中移除
+		public static bool IsBulletNotify(this DRSkillData data) { return CheckSkillAttr(data, (int)eSkillAttr.SkillAttr_BulletNotify); } //子弹产生事件
+		public static bool IsBulletBornTarPos(this DRSkillData data) { return CheckSkillAttr(data, (int)eSkillAttr.SkillAttr_BulletBornTarPos); } //子弹出生在目标点
+
+		//技能目标
+		public static bool CheckTarget(this DRSkillData data, int nType) { return (data.MSV_TarType & nType) > 0; }
+		public static bool IsTargetSelf(this DRSkillData data) { return CheckTarget(data, (int)eSkillTargetType.TargetType_Self); } //是否对自己使用
+		public static bool IsTargetOther(this DRSkillData data) { return CheckTarget(data, (int)eSkillTargetType.TargetType_Other); } //是否对其他使用
+		public static bool IsTargetAvatar(this DRSkillData data) { return IsTargetSelf(data) || IsTargetOther(data); } //是否对角色使用
+		public static bool IsTargetSelfOnly(this DRSkillData data) { return IsTargetSelf(data) && !IsTargetOther(data); } //是否仅对自己使用
+		public static bool IsTargetPos(this DRSkillData data) { return CheckTarget(data, (int)eSkillTargetType.TargetType_Pos); }//对坐标使用
+		public static bool IsTargetDir(this DRSkillData data) { return CheckTarget(data, (int)eSkillTargetType.TargetType_Dir); }//对朝向使用
+
+		//技能结算检查
+		public static bool CheckSkillCalculation(this DRSkillData data, int nState) { return (data.MSV_EffectCalculation & nState) > 0; }
+		public static bool IsCalculationHit(this DRSkillData data) { return CheckSkillCalculation(data, (int)eSkillCalculation.SkillCalculation_Hit); } //计算命中
+		public static bool IsCalculationAtk(this DRSkillData data) { return CheckSkillCalculation(data, (int)eSkillCalculation.SkillCalculation_Atk); } //计算攻击
+		public static bool IsCalculationAC(this DRSkillData data) { return CheckSkillCalculation(data, (int)eSkillCalculation.SkillCalculation_AC); } //计算护甲
+	}
+}
+
+
+#region 旧数据格式
+//using UnityEngine;
 //using System;
 //using System.Collections;
 //using System.Collections.Generic;
@@ -412,3 +463,4 @@
 //    }
 
 //}
+#endregion

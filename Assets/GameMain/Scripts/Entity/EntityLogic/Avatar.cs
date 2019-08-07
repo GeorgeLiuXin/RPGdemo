@@ -195,5 +195,12 @@ namespace Galaxy
 		{
 			return m_AvatarData.GetPercentValue(define);
 		}
+
+		public PlayerAValueData GetRoleAValue()
+		{
+			if(m_AvatarData == null)
+				return null;
+			return m_AvatarData.GetAValue();
+		}
 	}
 }

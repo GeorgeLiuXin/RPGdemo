@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using GameFramework;
+using UnityEngine;
 
 namespace Galaxy
 {
@@ -52,16 +54,15 @@ namespace Galaxy
     public enum eSkillTargetType
     {
         TargetType_Self = 1 << 0,           //对自己使用
-        TargetType_OtherFriend = 1 << 1,    //对其他友方角色使用
-        TargetType_OtherEnemy = 1 << 2,     //对其他敌方角色使用
-        TargetType_Pos = 1 << 3,            //对坐标使用
-        TargetType_Dir = 1 << 4,            //对朝向使用
+        TargetType_Other = 1 << 1,			//对其他角色使用
+        TargetType_Pos = 1 << 2,            //对坐标使用
+        TargetType_Dir = 1 << 3,            //对朝向使用
     };
 
     public enum eSkillTarget
     {
         SkillTarget_Self = 1,               //对自己使用
-        SkillTarget_Avatar,             //对角色使用
+        SkillTarget_Avatar,					//对角色使用
         SkillTarget_Pos,                    //对坐标使用
         SkillTarget_Dir,                    //对朝向使用
     };
@@ -126,8 +127,9 @@ namespace Galaxy
 		NotifyObject_Effect,
 	};
 
+	//todo 改成引用池管理
 	public class GTargetInfo
-    {
+	{
         public int m_nTargetID;
         public Vector3 m_vSrcPos;
         public Vector3 m_vTarPos;
@@ -149,7 +151,7 @@ namespace Galaxy
 			m_vAimDir = Vector3.zero;
 			m_vMoveTarPos = Vector3.zero;
 		}
-    }
+	}
 
     public enum eTriggerNotifyType
     {

@@ -5,25 +5,27 @@ using GameFramework;
 
 namespace Galaxy
 {
-    public partial class SkillComponent : ComponentBase
-    {
+	public partial class SkillComponent : ComponentBase
+	{
 		//实例子弹存储 todo 子弹也是场景的一个实例
-        public Dictionary<int, List<GSkillProjectile>> m_ProjectileDict;
+		public Dictionary<int, List<GSkillProjectile>> m_ProjectileDict;
 
 		//防死锁/效率优化 两级事件缓存
-        public List<GTriggerNotify> m_TriggerNotifyCurList;
+		public List<GTriggerNotify> m_TriggerNotifyCurList;
 		public List<GTriggerNotify> m_TriggerNotifyWaitList;
-
-		//主动技能
+		
+		//所有技能
 		public Dictionary<int, GSkillSpellLogic> m_SkillLogicDict;
+		//主动技能
+		protected GSkillSpellLogic m_pSpellLogic;
 		//被动技能
-        public List<GSkillSpellLogic> m_PassiveList;
+		protected List<GSkillSpellLogic> m_PassiveList;
+		protected List<GSkillSpellLogic> m_PassiveTempList;
 		//触发技能
-		public List<GSkillSpellLogic> m_TriggerSkillList;
-
-
-        protected override void InitComponent()
-        {
+		protected List<GSkillSpellLogic> m_TriggerSkillList;
+		
+		protected override void InitComponent()
+		{
 			m_ProjectileDict = new Dictionary<int, List<GSkillProjectile>>();
 
 			m_TriggerNotifyCurList = new List<GTriggerNotify>();
@@ -34,53 +36,271 @@ namespace Galaxy
 			m_TriggerSkillList = new List<GSkillSpellLogic>();
 		}
 
-        public override void OnPreDestroy()
-        {
-			//todo Release Reference
+		public override void OnPreDestroy()
+		{
+			FinishSkill();
+			
 			m_ProjectileDict.Clear();
 
 			m_TriggerNotifyCurList.Clear();
 			m_TriggerNotifyWaitList.Clear();
 
-			m_SkillLogicDict.Clear();
-			m_PassiveList.Clear();
-			m_TriggerSkillList.Clear();
+			if(m_SkillLogicDict != null)
+			{
+				foreach(var item in m_SkillLogicDict)
+				{
+					ReferencePool.Release(item.Value);
+				}
+				m_SkillLogicDict.Clear();
+			}
+			if(m_PassiveList != null)
+			{
+				foreach(var item in m_PassiveList)
+				{
+					ReferencePool.Release(item);
+				}
+				m_PassiveList.Clear();
+			}
+			if(m_TriggerSkillList != null)
+			{
+				foreach(var item in m_TriggerSkillList)
+				{
+					ReferencePool.Release(item);
+				}
+				m_TriggerSkillList.Clear();
+			}
 		}
-        
-        public void Update()
+
+		public void Update()
 		{
-			//    // 刷新加速时间
 			//    TickProjectile(nFrameTime);
 			//    TickPassiveSkill(nFrameTime);
 			//    TickSkill(nFrameTime);
 			//    ProcessTriggerNotify();
 		}
 
-		public bool AddSkill(int nSkillID)
-        {
-            return false;
-        }
+		////清除被动技能
+		//void GNodeSkillComponent::ClearPassiveSkill()
+		//{
+		//    for (int32 i = 0; i < NotifyType_Count; ++i)
+		//    {
+		//        m_vTriggerSkillList[i].clear();
+		//    }
 
-        public void RemoveSkill(int nSkillID)
-        {
+		//    m_vPassiveList.clear();
+		//    m_vPassiveTempList.clear();
+		//}
 
-        }
+		//void GNodeSkillComponent::ClearSkillProjectile()
+		//{
+		//    if (m_pOwner && m_pOwner->GetScene())
+		//    {
+		//        ((GNodeScene*)m_pOwner->GetScene())->ChangeProjsCount(-m_nProjectileCount);
+		//    }
 
-        public bool HasSkill(int nSkillID)
-        {
-            return false;
-        }
+		//    m_vProjectileMap.Begin();
+		//    while (!m_vProjectileMap.IsEnd())
+		//    {
+		//        ProjectileList & vList = m_vProjectileMap.Get();
+		//        for (ProjectileList::iterator iter = vList.begin(); iter != vList.end(); ++iter)
+		//        {
+		//            FACTORY_DELOBJ(*iter);
+		//        }
+		//        m_vProjectileMap.Remove();
+		//    }
+		//    m_nProjectileCount = 0;
+		//}
 
+		//增加技能
+		public bool AddSkill(int nSkillID/*, int nSlots = 0*/)
+		{
+			if(!Owner)
+				return false;
+			DRSkillData pSkillData = GameEntry.DataTable.GetDataTable<DRSkillData>().GetDataRow(nSkillID);
+			if(pSkillData == null)
+				return false;
+
+			if(HasSkill(nSkillID))
+				return false;
+
+			GTargetInfo sTarInfo = new GTargetInfo();
+			sTarInfo.m_nTargetID = Owner.Id;
+			sTarInfo.m_vSrcPos = Owner.GetPos();
+			sTarInfo.m_vAimDir = Owner.GetDir();
+			sTarInfo.m_vTarPos = Owner.GetPos();
+
+			GSkillInitParam param = new GSkillInitParam(Owner, sTarInfo, pSkillData);
+			GSkillSpellLogic pSpellLogic = CreateSkill(param);
+			if(pSpellLogic == null)
+				return false;
+
+			m_SkillLogicDict.Add(nSkillID, pSpellLogic);
+			if(pSkillData.IsPassiveSkill() && !pSkillData.IsBuffSkill())
+			{
+				AddPassiveSkill(pSpellLogic);
+				TryCalculateAttribute(pSpellLogic);
+			}
+
+			AddSubSkill(pSpellLogic);
+			return true;
+		}
+
+		//创建技能
+		private GSkillSpellLogic CreateSkill(GSkillInitParam initParam)
+		{
+			if(!Owner)
+				return null;
+
+			if(initParam == null 
+				|| initParam.m_pOwner == null 
+				|| initParam.m_pSkillData == null)
+				return null;
+
+			int nLogicID = initParam.m_pSkillData.MSV_SpellLogic;
+			GSkillSpellLogic pSpellLogic = GSkillLogicManager.Instance.CreateSpellLogic(nLogicID);
+			if(pSpellLogic == null)
+				return null;
+
+			if(!pSpellLogic.Init(initParam))
+			{
+				ReferencePool.Release(pSpellLogic);
+				return null;
+			}
+			return pSpellLogic;
+		}
+
+		//增加子技能
+		private void AddSubSkill(GSkillSpellLogic pSpellLogic)
+		{
+			if(pSpellLogic == null)
+				return;
+
+			List<int> pSkillList = GSkillDataManager.Instance.GetSubSkillList(pSpellLogic.GetSkillID());
+			if(pSkillList == null)
+				return;
+
+			//todo 技能修正
+			//int nSlots = pSpellLogic.GetSkillSlots();
+			foreach(var item in pSkillList)
+			{
+				AddSkill(item/*, nSlots*/);
+			}
+		}
+
+		public void RemoveSkill(int nSkillID)
+		{
+			if(!HasSkill(nSkillID))
+				return;
+
+			GSkillSpellLogic pSpellLogic = GetSkill(nSkillID);
+			if(pSpellLogic == null)
+				return;
+
+			//停止施法
+			if(pSpellLogic == m_pSpellLogic)
+			{
+				FinishSkill();
+			}
+
+			RemoveSubSkill(pSpellLogic);
+
+			//刷新属性集
+			TryCalculateAttribute(pSpellLogic);
+			//移除被动技能
+			RemovePassiveSkill(pSpellLogic);
+
+			ReferencePool.Release(pSpellLogic);
+			m_SkillLogicDict.Remove(nSkillID);
+		}
+
+		//移除子技能
+		private void RemoveSubSkill(GSkillSpellLogic pSpellLogic)
+		{
+			if(pSpellLogic == null)
+				return;
+
+			List<int> pSkillList = GSkillDataManager.Instance.GetSubSkillList(pSpellLogic.GetSkillID());
+			if(pSkillList == null)
+				return;
+
+			foreach(var item in pSkillList)
+			{
+				RemoveSkill(item);
+			}
+		}
+
+		//是否拥有技能
+		public bool HasSkill(int nSkillID)
+		{
+			return (GetSkill(nSkillID) != null);
+		}
+		
+		//获取技能
 		public GSkillSpellLogic GetSkill(int nSkillID)
 		{
-			if (m_SkillLogicDict.ContainsKey(nSkillID))
+			if(m_SkillLogicDict.ContainsKey(nSkillID))
 			{
 				return m_SkillLogicDict[nSkillID];
 			}
 			return null;
 		}
 
-    }
+		private void AddPassiveSkill(GSkillSpellLogic pSpellLogic)
+		{
+			if(pSpellLogic == null)
+				return;
+			m_PassiveTempList.Add(pSpellLogic);
+		}
+
+		//移除被动技能
+		private void RemovePassiveSkill(GSkillSpellLogic pSpellLogic)
+		{
+			m_PassiveList.Remove(pSpellLogic);
+			m_PassiveTempList.Remove(pSpellLogic);
+			RemoveTriggerSkill(pSpellLogic);
+		}
+
+		//增加技能触发
+		private void AddTriggerSkill(GSkillSpellLogic pTriggerLogic)
+		{
+			if(pTriggerLogic == null
+				|| pTriggerLogic.m_pSkillData == null
+				|| !pTriggerLogic.m_pSkillData.IsTriggerSkill())
+				return;
+
+			int nType = pTriggerLogic.m_pSkillData.MSV_TriggerType;
+			if(nType >= 0 && nType < (int)eTriggerNotifyType.NotifyType_Count)
+			{
+				m_TriggerSkillList[nType].Add(pTriggerLogic);
+			}
+		}
+		//移除技能触发
+		private void RemoveTriggerSkill(GSkillSpellLogic pTriggerLogic)
+		{
+			if(pTriggerLogic == null || pTriggerLogic.m_pSkillData == null)
+				return;
+
+			int nType = pTriggerLogic.m_pSkillData.MSV_TriggerType;
+			if(nType >= 0 && nType < (int)eTriggerNotifyType.NotifyType_Count)
+			{
+				m_TriggerSkillList[nType].Remove(pTriggerLogic);
+			}
+		}
+
+		////获取技能，如果不是实例技能，返回模版技能
+		//GSkillData* GNodeSkillComponent::GetSkillData(int32 nSkillID)
+		//{
+		//    GSkillSpellLogic* pSpellLogic = GetSkill(nSkillID);
+		//    if (pSpellLogic)
+		//        return pSpellLogic->m_pSkillData;
+
+		//    GSkillData* pSkillData = GSkillDataManager::Instance().GetSkillData(nSkillID);
+		//    if (pSkillData && pSkillData->IsTemplateSkill())
+		//        return pSkillData;
+
+		//    return NULL;
+		//}
+	}
 
 }
 
@@ -405,11 +625,6 @@ namespace Galaxy
 //    m_pSpellLogic->Cast(chargeLevel);
 //}
 
-////是否拥有技能
-//bool GNodeSkillComponent::HasSkill(int32 nSkillID)
-//{
-//    return (GetSkill(nSkillID) != NULL);
-//}
 ////检查技能消耗
 //bool GNodeSkillComponent::CheckCost(GSkillData* pSkillData)
 //{
@@ -608,120 +823,7 @@ namespace Galaxy
 //    }
 //    pCDComponent->StartCD(nCDGroup, nCDTime, bStart);
 //}
-////处理技能效果
-//void GNodeSkillComponent::ProcessSkillEffect(GSkillData* pSkillData, GSkillTargetInfo& sTarInfo, RoleAValue& sRoleValue)
-//{
-//    GSkillExcludeList vExcludeList;
-//    ProcessSkillEffect(pSkillData, sTarInfo, sRoleValue, vExcludeList);
-//}
 
-//void GNodeSkillComponent::ProcessSkillEffect(GSkillData* pSkillData, GSkillTargetInfo& sTarInfo, RoleAValue& sRoleValue, GSkillExcludeList& vExcludeList)
-//{
-//    if (!pSkillData)
-//        return;
-
-//    GNodeAvatar* pCaster = m_pOwnerNode;
-//    if (!pCaster)
-//        return;
-
-//    int32 nAreaLogic = pSkillData->GetIntValue(MSV_AreaLogic);
-//    GSkillAreaLogic* pAreaLogic = GSkillLogicManager::Instance().GetAreaLogic(nAreaLogic);
-//    if (!pAreaLogic)
-//        return;
-
-//    if (nAreaLogic != SkillArea_Singleton && !pSkillData->IsAreaIncludeSelf())
-//        vExcludeList.insert(pCaster->GetAvatarID());
-
-//    GSkillTargetList vTargetList = pAreaLogic->GetTargetList(pSkillData, pCaster, sTarInfo, vExcludeList);
-//    if (vTargetList.empty())
-//        return;
-
-//    //合并攻击方属性
-//    RoleAValue sSkillAValue;
-//    sSkillAValue.Copy(sRoleValue);
-//    sSkillAValue.Combine(pSkillData->m_RoleValue);
-
-//    RoleAValue sCasterRoleValue;
-//    sCasterRoleValue.Copy(sSkillAValue);
-//    sCasterRoleValue.Combine(pCaster->GetRoleAValue());
-
-//    if (pSkillData->IsCombineEffectNotify())
-//    {
-//        PushTriggerNotifyAValue(pSkillData->m_nDataID, 0, NotifyType_CombineEffect, pSkillData->GetIntValue(MSV_EffectType), &sCasterRoleValue);
-//    }
-
-//    bool bHit = false;              //是否命中
-//    int32 nComboCount = 0;      //连击计数
-//    int32 nEffectLogic = pSkillData->GetIntValue(MSV_EffectLogic);
-//    if (pSkillData->IsEffectMulti())
-//    {
-
-//    }
-//    else
-//    {
-//        GSkillEffectLogic* pEffectLogic = GSkillLogicManager::Instance().GetEffectLogic(nEffectLogic);
-//        if (!pEffectLogic)
-//            return;
-
-//        GSkillTargetInfo tempTarInfo;
-//        vTargetList.Begin();
-//        while (!vTargetList.IsEnd())
-//        {
-//            GNodeAvatar* pTarget = vTargetList.GetKey();
-//            bool bVisible = vTargetList.Get();
-//            vTargetList.Next();
-
-//            if (!pTarget)
-//            {
-//                continue;
-//            }
-
-//            int32 nTargetID = pTarget->GetAvatarID();
-//            if (vExcludeList.find(nTargetID) != vExcludeList.end())
-//            {
-//                continue;
-//            }
-
-//            GSkillEffectCalculation sCaluation;
-//            sCaluation.m_bVisible = bVisible;
-//            sCaluation.m_pSkillData = pSkillData;
-//            sCaluation.m_pCaster = pCaster;
-//            sCaluation.m_pTarget = pTarget;
-//            sCaluation.m_CasterAValue.Copy(sCasterRoleValue);
-//            sCaluation.m_TargetAValue.Copy(pTarget->GetRoleAValue());
-//            sCaluation.TransfromEffectTarget();
-
-//            tempTarInfo = sTarInfo;
-//            tempTarInfo.m_nTargetID = pTarget->GetAvatarID();
-//            tempTarInfo.m_nShapeID = -1;
-//            tempTarInfo.m_vTarPos = pTarget->GetPos();
-
-//            if (pEffectLogic->Process(sCaluation, tempTarInfo, sSkillAValue))
-//            {
-//                pAreaLogic->Draw(pSkillData, pCaster, pTarget, sTarInfo);
-//                bHit = true;
-//                ++nComboCount;
-//            }
-//            //填充重复列表
-//            if (pSkillData->IsAreaAddExclude())
-//            {
-//                vExcludeList.insert(pTarget->GetAvatarID());
-//            }
-//            //减少效果次数
-//            if (vExcludeList.m_nCount > 0)
-//            {
-//                --vExcludeList.m_nCount;
-//            }
-//        }
-//    }
-
-//    if (bHit)
-//    {
-//        //命中附加效果
-//    }
-
-//    UpdateCombo(pSkillData, nComboCount);
-//}
 ////创建技能子弹
 //void GNodeSkillComponent::CreateSkillProjectile(GSkillData* pSkillData, GSkillTargetInfo& sTarInfo, RoleAValue& sRoleValue)
 //{
@@ -781,26 +883,6 @@ namespace Galaxy
 //    m_vProjectileMap[pSkillData->GetSkillID()].push_back(pProjectile);
 //}
 
-//void GNodeSkillComponent::ClearSkillProjectile()
-//{
-//    if (m_pOwner && m_pOwner->GetScene())
-//    {
-//        ((GNodeScene*)m_pOwner->GetScene())->ChangeProjsCount(-m_nProjectileCount);
-//    }
-
-//    m_vProjectileMap.Begin();
-//    while (!m_vProjectileMap.IsEnd())
-//    {
-//        ProjectileList & vList = m_vProjectileMap.Get();
-//        for (ProjectileList::iterator iter = vList.begin(); iter != vList.end(); ++iter)
-//        {
-//            FACTORY_DELOBJ(*iter);
-//        }
-//        m_vProjectileMap.Remove();
-//    }
-//    m_nProjectileCount = 0;
-//}
-
 //Galaxy::ProjectileList* GNodeSkillComponent::GetSkillProjectileList(int32 nSkillID)
 //{
 //    if (m_vProjectileMap.Find(nSkillID))
@@ -826,343 +908,10 @@ namespace Galaxy
 //    return NULL;
 //}
 
-////获取技能
-//GSkillSpellLogic* GNodeSkillComponent::GetSkill(int32 nSkillID)
-//{
-//    if (m_SkillLogicMap.Find(nSkillID))
-//    {
-//        return m_SkillLogicMap.Get();
-//    }
-
-//    return NULL;
-//}
-
-//GSkillSpellLogic* GNodeSkillComponent::CreateSkill(GSkillInitParam* initParam)
-//{
-//    if (!m_pOwnerNode)
-//        return NULL;
-
-//    if (!initParam || !initParam->pCaster || !initParam->pSkillData)
-//        return NULL;
-
-//    int32 nLogicID = initParam->pSkillData->GetIntValue(MSV_SpellLogic);
-//    GSkillSpellLogic* pSpellLogic = GSkillLogicManager::Instance().CreateSpellLogic(nLogicID);
-//    if (!pSpellLogic)
-//        return NULL;
-
-//    if (!pSpellLogic->Init(*initParam))
-//    {
-//        FACTORY_DELOBJ(pSpellLogic);
-//        return false;
-//    }
-
-//    pSpellLogic->m_TargetInfo.m_nTargetID = m_pOwnerNode->GetAvatarID();
-//    pSpellLogic->m_TargetInfo.m_vSrcPos = m_pOwnerNode->GetPos();
-//    pSpellLogic->m_TargetInfo.m_vAimDir = m_pOwnerNode->GetDir();
-//    pSpellLogic->m_TargetInfo.m_vTarPos = m_pOwnerNode->GetPos();
-//    return pSpellLogic;
-//}
-
-////增加技能
-//bool GNodeSkillComponent::AddSkill(int32 nSkillID, int32 nSlots/* = 0*/)
-//{
-//    if (!m_pOwnerNode)
-//        return false;
-
-//    GSkillData* pSkillData = GSkillDataManager::Instance().GetSkillData(nSkillID);
-//    if (!pSkillData)
-//        return false;
-
-//    if (HasSkill(nSkillID))
-//        return false;
-
-//    GSkillInitParam param;
-//    param.pOwner = m_pOwnerNode;
-//    param.pCaster = m_pOwnerNode;
-//    param.pSkillData = pSkillData;
-//    param.nSlots = nSlots;
-//    GSkillSpellLogic* pSpellLogic = CreateSkill(&param);
-//    if (!pSpellLogic)
-//        return false;
-
-//    m_SkillLogicMap[nSkillID] = pSpellLogic;
-
-//    if (pSkillData->IsPassiveSkill() && !pSkillData->IsBuffSkill())
-//    {
-//        AddPassiveSkill(pSpellLogic);
-//        TryCalculateAttribute(pSpellLogic);
-//    }
-
-//    AddSubSkill(pSpellLogic);
-
-//    //技能施放顺序排序
-//    m_SkillPriorityList.push_back(pSpellLogic);
-
-//    /*if (bSort)
-//    {
-//        std::sort(m_SkillPriorityList.begin(), m_SkillPriorityList.end(), SkillPriorityCompare());
-//    }*/
-//    return true;
-//}
-
-//void GNodeSkillComponent::RemoveSkill(int32 nSkillID, bool bRemoveSub)
-//{
-//    if (!m_SkillLogicMap.Find(nSkillID))
-//        return;
-
-//    GSkillSpellLogic* pSpellLogic = m_SkillLogicMap.Get();
-//    if (!pSpellLogic)
-//        return;
-
-//    //停止施法
-//    if (pSpellLogic == m_pSpellLogic)
-//    {
-//        FinishSkill();
-//    }
-
-//    //移除子技能
-//    if (bRemoveSub)
-//        RemoveSubSkill(pSpellLogic);
-
-//    //刷新属性集
-//    TryCalculateAttribute(pSpellLogic);
-//    //移除被动技能
-//    RemovePassiveSkill(pSpellLogic);
-//    //移除优先级
-//    m_SkillPriorityList.Remove(pSpellLogic);
-
-//    FACTORY_DELOBJ(pSpellLogic);
-//    m_SkillLogicMap.Remove(nSkillID);
-//}
-
-//bool GNodeSkillComponent::BreakSkill(int32 nSKillID, bool bServer)
-//{
-//    if (m_pSpellLogic && m_pSpellLogic->GetSkillID() == nSKillID)
-//    {
-//        AbortSkill(bServer);
-//        if (m_pOwnerNode)
-//        {
-//            GPacketSkillBreak pkt;
-//            pkt.nSkillID = nSKillID;
-//            pkt.bServer = bServer;
-//            m_pOwnerNode->BroadcastPacket(&pkt);
-//        }
-
-//        FinishSkill();
-//        return true;
-//    }
-//    return false;
-//}
-
-//bool GNodeSkillComponent::BreakSkill()
-//{
-//    if (m_pSpellLogic && m_pSpellLogic->m_pSkillData)
-//    {
-//        if (m_pSpellLogic->m_pSkillData->IsCanBreak())
-//        {
-//            if (m_pOwnerNode)
-//            {
-//                GPacketSkillBreak pkt;
-//                pkt.nSkillID = m_pSpellLogic->GetSkillID();
-//                pkt.bServer = true;
-//                m_pOwnerNode->BroadcastPacket(&pkt);
-//            }
-//            FinishSkill();
-
-
-
-//            //打断效果	TODO
-//            if (!m_pOwnerNode->GetFSM())
-//                return true;
-
-//            //霸体状态免疫击退
-//            if (m_pOwnerNode->CheckState(GAS_SuperArmor))
-//                return true;
-
-//            int32 nLogicType = BREAK_EFFECT_BEATBACK;
-
-//            if (m_pOwnerNode->GetAIComponent())
-//            {
-//                m_pOwnerNode->GetAIComponent()->OnStrongControl();
-//            }
-
-//            FSMParam_StrongControlled param;
-//            param.nControlledType = BREAK_EFFECT_BEATBACKTYPE;
-//            param.fMoveTime = BREAK_EFFECT_MOVETIME;
-//            param.fLifeTime = BREAK_EFFECT_LIFETIME;
-//            param.nBeatDir = BREAK_EFFECT_BEATBACKDIR;
-//            param.vStartPos = m_pOwnerNode->GetPos();
-//            //2018-09-30 jasondong 伤害源坐标若在墙中会把人打上天，注掉
-//            //param.vStartPos.z = m_pOwnerNode->GetSceneHeight(m_pOwnerNode->GetPos()); 
-//            param.vEndPos = param.vStartPos;
-//            m_pOwnerNode->SetTargetState(&param, SPRI_Equal);
-
-//            return true;
-//        }
-//    }
-//    return false;
-//}
-
-//void GNodeSkillComponent::AbortSkill(bool bServer/* = false*/)
-//{
-//    if (m_pSpellLogic)
-//    {
-//        m_pSpellLogic->Abort(bServer);
-//    }
-//}
-
 ////死亡处理
 //void GNodeSkillComponent::OnDead()
 //{
 //    FinishSkill();
-//}
-////受击处理
-//void GNodeSkillComponent::OnHurt()
-//{
-
-//}
-////获取技能，如果不是实例技能，返回模版技能
-//GSkillData* GNodeSkillComponent::GetSkillData(int32 nSkillID)
-//{
-//    GSkillSpellLogic* pSpellLogic = GetSkill(nSkillID);
-//    if (pSpellLogic)
-//        return pSpellLogic->m_pSkillData;
-
-//    GSkillData* pSkillData = GSkillDataManager::Instance().GetSkillData(nSkillID);
-//    if (pSkillData && pSkillData->IsTemplateSkill())
-//        return pSkillData;
-
-//    return NULL;
-//}
-
-////设置星级
-//void GNodeSkillComponent::SetSkillSlots(int32 nSkillID, int32 nSlots)
-//{
-//    GSkillSpellLogic* pSpellLogic = GetSkill(nSkillID);
-//    if (pSpellLogic)
-//    {
-//        int nCurSlots = pSpellLogic->GetSkillSlots() | nSlots;
-//        pSpellLogic->SetSkillSlots(nCurSlots);
-//        TryCalculateAttribute(pSpellLogic);
-//        //设置子技能星级
-//        SetSubSkillSlots(nSkillID, nCurSlots);
-//    }
-//}
-////移除星级
-//void GNodeSkillComponent::ClearSkillSlots(int32 nSkillID, int32 nSlots)
-//{
-//    GSkillSpellLogic* pSpellLogic = GetSkill(nSkillID);
-//    if (pSpellLogic)
-//    {
-//        int32 nCurSlots = pSpellLogic->GetSkillSlots();
-//        nCurSlots ^= nCurSlots & nSlots;
-//        pSpellLogic->SetSkillSlots(nCurSlots);
-//        TryCalculateAttribute(pSpellLogic);
-//        //设置子技能星级
-//        SetSubSkillSlots(nSkillID, nCurSlots);
-//    }
-//}
-////刷新子技能星级
-//void GNodeSkillComponent::SetSubSkillSlots(int32 nSkillID, int32 nSlots)
-//{
-//    GSkillList* pSkillList = GSkillDataManager::Instance().GetSubSkillList(nSkillID);
-//    if (!pSkillList)
-//        return;
-
-//    GSkillList::iterator iter = pSkillList->begin();
-//    for (; iter != pSkillList->end(); ++iter)
-//    {
-//        GSkillSpellLogic* pSubSkill = GetSkill(*iter);
-//        if (pSubSkill)
-//        {
-//            pSubSkill->SetSkillSlots(nSlots);
-//            TryCalculateAttribute(pSubSkill);
-//        }
-//    }
-//}
-////增加子技能
-//void GNodeSkillComponent::AddSubSkill(GSkillSpellLogic* pSpellLogic)
-//{
-//    if (!pSpellLogic)
-//        return;
-
-//    //只同步不通知不存储
-//    GSkillList* pSkillList = GSkillDataManager::Instance().GetSubSkillList(pSpellLogic->GetSkillID());
-//    if (!pSkillList)
-//        return;
-
-//    int32 nSlots = pSpellLogic->GetSkillSlots();
-//    GSkillList::iterator iter = pSkillList->begin();
-//    for (; iter != pSkillList->end(); ++iter)
-//    {
-//        AddSkill(*iter, nSlots);
-//    }
-//}
-////移除子技能
-//void GNodeSkillComponent::RemoveSubSkill(GSkillSpellLogic* pSpellLogic)
-//{
-//    if (!pSpellLogic)
-//        return;
-
-//    GSkillList* pSkillList = GSkillDataManager::Instance().GetSubSkillList(pSpellLogic->GetSkillID());
-//    if (!pSkillList)
-//        return;
-
-//    GSkillList::iterator iter = pSkillList->begin();
-//    for (; iter != pSkillList->end(); ++iter)
-//    {
-//        RemoveSkill(*iter, false);
-//    }
-//}
-
-//void GNodeSkillComponent::AddPassiveSkill(GSkillSpellLogic* pSpellLogic)
-//{
-//    if (pSpellLogic)
-//    {
-//        m_vPassiveTempList.push_back(pSpellLogic);
-//    }
-//}
-////移除被动技能
-//void GNodeSkillComponent::RemovePassiveSkill(GSkillSpellLogic* pSpellLogic)
-//{
-//    m_vPassiveList.Remove(pSpellLogic);
-//    m_vPassiveTempList.Remove(pSpellLogic);
-//    RemoveTriggerSkill(pSpellLogic);
-//}
-////清除被动技能
-//void GNodeSkillComponent::ClearPassiveSkill()
-//{
-//    for (int32 i = 0; i < NotifyType_Count; ++i)
-//    {
-//        m_vTriggerSkillList[i].clear();
-//    }
-
-//    m_vPassiveList.clear();
-//    m_vPassiveTempList.clear();
-//}
-////增加技能触发
-//void GNodeSkillComponent::AddTriggerSkill(GSkillSpellLogic* pTriggerLogic)
-//{
-//    if (!pTriggerLogic || !pTriggerLogic->m_pSkillData || !pTriggerLogic->m_pSkillData->IsTriggerSkill())
-//        return;
-
-//    int32 nType = pTriggerLogic->m_pSkillData->GetIntValue(MSV_TriggerType);
-//    if (nType >= 0 && nType < NotifyType_Count)
-//    {
-//        m_vTriggerSkillList[nType].push_back(pTriggerLogic);
-//    }
-//}
-////移除技能触发
-//void GNodeSkillComponent::RemoveTriggerSkill(GSkillSpellLogic* pTriggerLogic)
-//{
-//    if (!pTriggerLogic || !pTriggerLogic->m_pSkillData)
-//        return;
-
-//    int32 nType = pTriggerLogic->m_pSkillData->GetIntValue(MSV_TriggerType);
-//    if (nType >= 0 && nType < NotifyType_Count)
-//    {
-//        m_vTriggerSkillList[nType].Remove(pTriggerLogic);
-//    }
 //}
 //bool GNodeSkillComponent::CanTriggerNotify(int32 nType)
 //{
@@ -1285,79 +1034,6 @@ namespace Galaxy
 //    }
 //}
 
-//int32 GNodeSkillComponent::GetCurrentSkillID()
-//{
-//    if (m_pSpellLogic)
-//    {
-//        return m_pSpellLogic->GetSkillID();
-//    }
-//    return -1;
-//}
-
-//Vector3& GNodeSkillComponent::GetCurrentSkillDir()
-//	{
-//		if (m_pSpellLogic)
-//		{
-//			return m_pSpellLogic->m_TargetInfo.m_vAimDir;
-//		}
-//		return m_pOwner->GetDir();
-//	}
-//	Vector3& GNodeSkillComponent::GetCurrentSkillPos()
-//	{
-//		if (m_pSpellLogic)
-//		{
-//			return m_pSpellLogic->m_TargetInfo.m_vSrcPos;
-//		}
-//		return m_pOwner->GetPos();
-//	}
-
-//	Galaxy::int32 GNodeSkillComponent::GetEndureLevel()
-//{
-//    if (m_pSpellLogic && m_pSpellLogic->m_pSkillData)
-//        return m_pSpellLogic->m_pSkillData->GetIntValue(MSV_EndureLevel);
-//    return 0;
-//}
-
-//void GNodeSkillComponent::UpdateCombo(GSkillData* pSkillData, int32 nCount)
-//{
-//    if (!m_pOwner || !m_pOwner->IsPlayer())
-//        return;
-
-//    if (!pSkillData)
-//        return;
-
-//    int32 nEffectLogic = pSkillData->GetIntValue(MSV_EffectLogic);
-//    if (nEffectLogic != SkillEffect_Damage)
-//        return;
-
-//    int32 nTimes = MAX(1, pSkillData->GetIntValue(MSV_CombatPerformanceTimes));
-
-//    m_nComboTime = 5000;
-//    m_nComboCount += nCount * nTimes;
-
-//    GPacketCombo pkt;
-//    pkt.nComboCount = m_nComboCount;
-//    m_pOwner->SendPacket(&pkt);
-
-//    GNodeScene* pScene = (GNodeScene*)m_pOwner->GetScene();
-//    if (pScene && pScene->IsCoypScene())
-//    {
-//        EventSceneNotify event;
-//			event.NotifyType = SceneNotify_PlayerCombo;
-//			event.ExtData0 = m_nComboCount;
-//			event.ExtData1 = m_pOwner->GetAvatarID();
-//			event.SrcAvatar = m_pOwner->GetAvatarID();
-//        pScene->EventNotify(&event);
-//    }
-//}
-
-//Galaxy::int32 GNodeSkillComponent::GetEpCost(int32 nEpID)
-//{
-//    if (m_vEpCostCount.Find(nEpID))
-//        return m_vEpCostCount.Get();
-//    return 0;
-//}
-
 //int32 GNodeSkillComponent::SpellUsableSkill()
 //{
 //    GNodeAvatar* pSrc = (GNodeAvatar*)m_pOwner;
@@ -1466,80 +1142,3 @@ namespace Galaxy
 //    }
 //}
 //}
-#region 之后添加
-
-
-//void GNodeSkillComponent::AddupAValues(AValueStruct &value, AValueMask* pMask)
-//{
-//    FuncPerformance(SkillComponent_AddupAttr)
-
-//        if (!m_pOwnerNode || m_pOwnerNode->CheckAValueAddupMask(AValueMask_Skill))
-//        return;
-
-//    m_SkillLogicMap.Begin();
-//    while (!m_SkillLogicMap.IsEnd())
-//    {
-//        GSkillSpellLogic* pSpellLogic = m_SkillLogicMap.Get();
-//        m_SkillLogicMap.Next();
-
-//        if (!pSpellLogic || !pSpellLogic->m_pSkillData)
-//            return;
-
-//        if (pSpellLogic->m_pSkillData->GetIntValue(MSV_SpellLogic) != SkillSpell_AValue)
-//            return;
-
-//        AValueStruct av;
-//        AValueStruct* pInfo = SkillLevelAValueManager::Instance().GetAValue(pSpellLogic->GetSkillID(), 1);
-//        if (pInfo)
-//        {
-//            av.Combine(pInfo, NULL);
-//        }
-
-//        int32 nSlots = pSpellLogic->m_pSkillData->m_nSlots;
-//        int32 nSlotsMask = pSpellLogic->m_pSkillData->m_nSlotsMask;
-//        if ((nSlotsMask & nSlots) > 0)
-//        {
-//            for (int32 i = 0; i < 32; ++i)
-//            {
-//                if ((nSlots & (1 << i)) <= 0)
-//                    continue;
-
-//                AValueStruct* pInfo = SkillStarAValueManager::Instance().GetAValue(pSpellLogic->GetSkillID(), i);
-//                if (pInfo)
-//                {
-//                    av.Combine(pInfo, NULL);
-//                }
-//            }
-//        }
-//        value.Combine(av, pMask);
-//    }
-//}
-
-//void GNodeSkillComponent::TryCalculateAttribute(GSkillSpellLogic* pSpellLogic)
-//{
-//    if (!pSpellLogic || !pSpellLogic->m_pSkillData)
-//        return;
-
-//    if (pSpellLogic->m_pSkillData->GetIntValue(MSV_SpellLogic) != SkillSpell_AValue)
-//        return;
-
-//    AValueMask valueMask;
-//    {
-//        AValueMask* pMask = SkillLevelAValueManager::Instance().GetAValueMask(pSpellLogic->GetSkillID());
-//        if (pMask)
-//        {
-//            valueMask.Combine(*pMask);
-//        }
-//    }
-//    {
-//        AValueMask* pMask = SkillStarAValueManager::Instance().GetAValueMask(pSpellLogic->GetSkillID());
-//        if (pMask)
-//        {
-//            valueMask.Combine(*pMask);
-//        }
-//    }
-//    ReCalculate(false, &valueMask);
-//}
-
-
-#endregion
