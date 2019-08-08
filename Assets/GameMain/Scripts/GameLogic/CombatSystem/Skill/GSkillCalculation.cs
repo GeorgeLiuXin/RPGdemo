@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using GameFramework;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -133,19 +134,30 @@ namespace Galaxy
 			float fDFR = 0.1f;
 			float fRandom = Random.Range(1 - fDFR, 1 + fDFR);
 			float fTotalDamage = Mathf.Max(0, fDamage * fRandom);
+
+			ModifyCalculation pModifyCal;
+
+			pModifyCal = ReferencePool.Acquire<ModifyCalculation>();
+			pModifyCal.type = eTriggerNotifyType.NotifyType_MakeDamage;
+			pModifyCal.fValue = fTotalDamage;
 			//造成的伤害
 			if(m_pCaster.SkillCom)
 			{
 				m_pCaster.SkillCom.PushTriggerNotifyEffect(m_pSkillData.Id, m_pTarget.Id, 
-					(int)eTriggerNotifyType.NotifyType_MakeDamage, nEffectType, &fTotalDamage);
+					(int)eTriggerNotifyType.NotifyType_MakeDamage, nEffectType, pModifyCal);
 			}
+			ReferencePool.Release(pModifyCal);
 
+			pModifyCal = ReferencePool.Acquire<ModifyCalculation>();
+			pModifyCal.type = eTriggerNotifyType.NotifyType_TakeDamage;
+			pModifyCal.fValue = fTotalDamage;
 			//承受的伤害
 			if(m_pTarget.SkillCom)
 			{
 				m_pTarget.SkillCom.PushTriggerNotifyEffect(m_pSkillData.Id, m_pCaster.Id,
-					(int)eTriggerNotifyType.NotifyType_TakeDamage, nEffectType, &fTotalDamage);
+					(int)eTriggerNotifyType.NotifyType_TakeDamage, nEffectType, pModifyCal);
 			}
+			ReferencePool.Release(pModifyCal);
 
 			if(fTotalDamage >= 1.0f)
 			{

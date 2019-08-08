@@ -111,13 +111,7 @@ namespace Galaxy
 		{
 			return m_fLockTime > 0;
 		}
-
-		//todo 技能逻辑finish接口
-		public void Finish()
-		{
-
-		}
-
+		
 		public override void ProcessEffect()
 		{
 			if(EffectCost())

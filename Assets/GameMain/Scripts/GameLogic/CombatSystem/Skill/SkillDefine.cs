@@ -219,6 +219,18 @@ namespace Galaxy
         TriggerNotify_BulletDead = 1 << 2,  //子弹死亡事件
     };
 
+	public class ModifyCalculation : IReference
+	{
+		public eTriggerNotifyType type;
+		public float fValue;
+
+		public void Clear()
+		{
+			type = eTriggerNotifyType.NotifyType_Count;
+			fValue = 0;
+		}
+	}
+
     public enum eSkillCalculation
     {
         SkillCalculation_Hit = 1 << 0,  //计算命中

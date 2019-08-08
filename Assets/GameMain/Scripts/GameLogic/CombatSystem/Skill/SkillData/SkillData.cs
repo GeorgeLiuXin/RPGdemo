@@ -2,6 +2,7 @@
 namespace Galaxy
 {
 	//临时方案 先整理流程，再开发技能修正
+	//开发技能修正后，将技能数据包裹在类内同时添加修正逻辑加当前技能数据的配置属性集
 	public static class DRSkillDataExtension
 	{
 		//技能类型检查

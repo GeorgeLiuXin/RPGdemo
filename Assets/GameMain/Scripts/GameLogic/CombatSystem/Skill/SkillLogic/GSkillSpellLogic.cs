@@ -99,6 +99,14 @@ namespace Galaxy
 		{
 			return m_bFinish;
 		}
+		public void	Finish()
+		{
+			m_bFinish = true;
+		}
+		public virtual void SetCosted()
+		{
+			m_bCosted = true;
+		}
 
 		public SkillAValueData GetSkillAValue()
 		{

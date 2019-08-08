@@ -12,7 +12,7 @@ namespace Galaxy
 		public int m_nTargetID;
 		public int m_nType;
 		public int m_nFlag;
-		public float m_nValue;
+		public int m_nValue;
 		public Vector3 m_vSrcPos;
 		public Vector3 m_vTarPos;
 		public Vector3 m_vDir;
@@ -159,8 +159,8 @@ namespace Galaxy
 	/// </summary>
 	public class GTriggerNotifyEffect : GTriggerNotify
 	{
-		//需要修正的值
-		public float* m_pValue;
+		//todo 处理完了后需要release
+		public ModifyCalculation m_pValue;
 
 		public override eNotifyObject GetNotifyType()
 		{

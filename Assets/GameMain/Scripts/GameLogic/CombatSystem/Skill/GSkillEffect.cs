@@ -61,8 +61,8 @@ namespace Galaxy
 			if(pCaster.SkillCom)
 			{
 				pCaster.SkillCom.PushTriggerNotify(pSkillData.Id, pTarget.Id,
-					(int)eTriggerNotifyType.NotifyType_Damage, gameEvent.EffectType, 
-					gameEvent.EffectValue, sTarInfo.m_vSrcPos, 
+					(int)eTriggerNotifyType.NotifyType_Damage, gameEvent.EffectType,
+					(int)gameEvent.EffectValue, sTarInfo.m_vSrcPos, 
 					sTarInfo.m_vTarPos, sTarInfo.m_vAimDir);
 			}
 
@@ -70,7 +70,7 @@ namespace Galaxy
 			{
 				pTarget.SkillCom.PushTriggerNotify(pSkillData.Id, pCaster.Id,
 					(int)eTriggerNotifyType.NotifyType_OnDamage, gameEvent.EffectType,
-					gameEvent.EffectValue, sTarInfo.m_vSrcPos,
+					(int)gameEvent.EffectValue, sTarInfo.m_vSrcPos,
 					sTarInfo.m_vTarPos, sTarInfo.m_vAimDir);
 			}
 			//产生效果事件
@@ -107,12 +107,12 @@ namespace Galaxy
 			sCalculation.CalculationHeal(ref gameEvent.EffectType, ref gameEvent.EffectValue);
 
 			//////////////////////////////////////////////////////////////////////////
-			//产生效果事件
+			//产生效果事件 todo伤害数值为整数，修正为随意
 			if(pCaster.SkillCom)
 			{
 				pCaster.SkillCom.PushTriggerNotify(pSkillData.Id, pTarget.Id,
 					(int)eTriggerNotifyType.NotifyType_Heal, gameEvent.EffectType,
-					gameEvent.EffectValue, sTarInfo.m_vSrcPos,
+					(int)gameEvent.EffectValue, sTarInfo.m_vSrcPos,
 					sTarInfo.m_vTarPos, sTarInfo.m_vAimDir);
 			}
 
@@ -120,7 +120,7 @@ namespace Galaxy
 			{
 				pTarget.SkillCom.PushTriggerNotify(pSkillData.Id, pCaster.Id,
 					(int)eTriggerNotifyType.NotifyType_Heal, gameEvent.EffectType,
-					gameEvent.EffectValue, sTarInfo.m_vSrcPos,
+					(int)gameEvent.EffectValue, sTarInfo.m_vSrcPos,
 					sTarInfo.m_vTarPos, sTarInfo.m_vAimDir);
 			}
 			//产生效果事件

@@ -104,19 +104,18 @@ namespace Galaxy
 				m_PassiveTempList.Clear();
 			}
 		}
-
-		//todo 子弹逻辑完成后修复
+		
 		private void ClearSkillProjectile()
 		{
-			//foreach(var list in m_ProjectileDict)
-			//{
-			//	foreach(var item in list.Value)
-			//	{
-					
-			//	}
-			//	list.Value.Clear();
-			//}
-			//m_ProjectileDict.Clear();
+			foreach(var list in m_ProjectileDict)
+			{
+				foreach(var item in list.Value)
+				{
+					ReferencePool.Release(item);
+				}
+				list.Value.Clear();
+			}
+			m_ProjectileDict.Clear();
 		}
 
 		//增加技能
@@ -439,7 +438,7 @@ namespace Galaxy
 		}
 		// 伤害吸收触发事件
 		public void PushTriggerNotifyEffect(int nSkillID, int nTargetID, int nType,
-			 int nFlag, float* fValue)
+			 int nFlag, ModifyCalculation pValue)
 		{
 			if(CanTriggerNotify(nType))
 			{
@@ -450,7 +449,7 @@ namespace Galaxy
 					pNotify.m_nTargetID = nTargetID;
 					pNotify.m_nType = nType;
 					pNotify.m_nFlag = nFlag;
-					pNotify.m_pValue = fValue;
+					pNotify.m_pValue = pValue;
 					PushTriggerNotify(pNotify);
 				}
 			}
