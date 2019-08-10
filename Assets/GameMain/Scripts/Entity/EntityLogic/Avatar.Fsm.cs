@@ -26,12 +26,13 @@ namespace Galaxy
 		private static string fsmNextData = "NextData";
 
 		private void InitFsm()
-		{
-			m_fsm = GameEntry.Fsm.CreateFsm(this, GameEntry.fsmMgr.GetAllFsmState<Avatar>());
-			m_fsm.Start<StateIdle>();
-			m_fsm.SetData(fsmStateFlag, new StateFlag());
-			m_fsm.SetData(fsmNextData, null);
-			m_changeFlag = false;
+        {
+            m_fsm = GameEntry.Fsm.CreateFsm(Utility.Text.GetFullName(GetType(), Id.ToString())
+                , this, GameEntry.fsmMgr.GetAllFsmState<Avatar>());
+            m_fsm.Start<StateIdle>();
+            m_fsm.SetData(fsmStateFlag, new StateFlag());
+            m_fsm.SetData(fsmNextData, null);
+            m_changeFlag = false;
 		}
 
 		public bool SetFsmState(object sender, StateParam stateData)
