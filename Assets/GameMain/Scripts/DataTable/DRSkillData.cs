@@ -1,6 +1,6 @@
 ﻿//------------------------------------------------------------
 // 此文件由工具自动生成，请勿直接修改。
-// 生成时间：2019-08-07 23:11:26.052
+// 生成时间：2019-08-09 08:04:17.477
 //------------------------------------------------------------
 
 using GameFramework;
@@ -320,7 +320,7 @@ namespace Galaxy
         }
 
         /// <summary>
-        /// 获取子弹位移逻辑。
+        /// 获取子弹逻辑。
         /// </summary>
         public int MSV_ProjectileLogic
         {
@@ -329,7 +329,7 @@ namespace Galaxy
         }
 
         /// <summary>
-        /// 获取子弹位移参数1。
+        /// 获取子弹参数1。
         /// </summary>
         public int MSV_ProjectileParam1
         {
@@ -338,7 +338,7 @@ namespace Galaxy
         }
 
         /// <summary>
-        /// 获取子弹位移参数2。
+        /// 获取子弹参数2。
         /// </summary>
         public int MSV_ProjectileParam2
         {
@@ -347,7 +347,7 @@ namespace Galaxy
         }
 
         /// <summary>
-        /// 获取子弹位移参数3。
+        /// 获取子弹参数3。
         /// </summary>
         public int MSV_ProjectileParam3
         {

@@ -26,6 +26,11 @@ namespace Galaxy
 		State_StronglyControl = 5,
 		State_Death = 6,
 
+		State_ActiveState = 48,
+
+		State_LockActiveSkill = 49,
+		State_LockMove = 50,
+
 		State_Size = 127,
 	}
 

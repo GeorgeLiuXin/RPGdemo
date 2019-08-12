@@ -6,6 +6,8 @@ namespace Galaxy
 {
 	public class GameMain : GameBase
 	{
+		private LevelTest m_tempLevel;
+
 		private Player m_Player = null;
 
 		public override GameMode GameMode
@@ -32,12 +34,19 @@ namespace Galaxy
 				});
 			GameOver = false;
 			m_Player = null;
+
+			//level temp code
+			m_tempLevel = new LevelTest();
+			m_tempLevel.Initialize();
 		}
 
 		public override void Shutdown()
 		{
 			GameEntry.Event.Unsubscribe(ShowEntitySuccessEventArgs.EventId, OnShowEntitySuccess);
 			GameEntry.Event.Unsubscribe(ShowEntityFailureEventArgs.EventId, OnShowEntityFailure);
+
+			//level temp code
+			m_tempLevel.Shutdown();
 		}
 
 		public override void Update(float elapseSeconds, float realElapseSeconds)
@@ -53,6 +62,10 @@ namespace Galaxy
 				m_Player = (Player)ne.Entity.Logic;
 				DRScene data = GameEntry.DataTable.GetDataTable<DRScene>().GetDataRow(2);
 				m_Player.transform.position = new Vector3(data.PosX, data.PosY, data.PosZ);
+			}
+			else if(ne.EntityLogicType == typeof(Monster))
+			{
+				m_tempLevel.OnShowEntitySuccess(sender, e);
 			}
 		}
 

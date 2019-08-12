@@ -22,8 +22,8 @@ namespace Galaxy
 		}
 
 		//temp 需要优化 可以通过外层包裹一个类封装住IFsm<Avatar>
-		private static string fsmStateFlag = "StateFlag";
-		private static string fsmNextData = "NextData";
+		private static readonly string fsmStateFlag = "StateFlag";
+		private static readonly string fsmNextData = "NextData";
 
 		private void InitFsm()
         {

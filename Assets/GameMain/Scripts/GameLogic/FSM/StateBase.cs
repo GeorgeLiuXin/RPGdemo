@@ -51,9 +51,10 @@ namespace Galaxy
 		{
 			base.OnEnter(pAvatar);
 			StateParam nextParam = pAvatar.Owner.GetNextStateData();
-			OnEnterState(nextParam);
+			OnEnterState(pAvatar, nextParam);
+			pAvatar.Owner.SetState(m_state);
 		}
-		protected abstract void OnEnterState(StateParam nextParam);
+		protected abstract void OnEnterState(StateOwner pAvatar, StateParam nextParam);
 
 		/// <summary>
 		/// 状态轮询时调用。
@@ -74,6 +75,7 @@ namespace Galaxy
 		protected override void OnLeave(StateOwner pAvatar, bool isShutdown)
 		{
 			base.OnLeave(pAvatar, isShutdown);
+			pAvatar.Owner.ResetState(m_state);
 		}
 
 		/// <summary>

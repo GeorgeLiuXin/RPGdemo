@@ -21,7 +21,7 @@ GameObject:
   - component: {fileID: 4944249758477712}
   - component: {fileID: 198720783989039482}
   - component: {fileID: 199627408327440408}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: MagicCircle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -38,7 +38,7 @@ GameObject:
   - component: {fileID: 4410629189440634}
   - component: {fileID: 198478454063958406}
   - component: {fileID: 199844566897109322}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: Efx_MagicCircle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -54,7 +54,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4167302790181398}
   - component: {fileID: 135498511492579176}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: AimCircle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -71,7 +71,7 @@ GameObject:
   - component: {fileID: 4344793822029898}
   - component: {fileID: 198078498056964712}
   - component: {fileID: 199628148723635162}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: MagicCircle_Burst
   m_TagString: Untagged
   m_Icon: {fileID: 0}

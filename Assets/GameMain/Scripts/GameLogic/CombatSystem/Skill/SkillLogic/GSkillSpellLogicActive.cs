@@ -102,6 +102,7 @@ namespace Galaxy
 			if(!m_pOwner)
 				return false;
 			StateSkillParam param = new StateSkillParam();
+			param.m_nSkillID = m_pSkillData.Id;
 			param.m_fTotalTime = m_pSkillData.MSV_LastTime;
 			param.m_fBreakTime = m_pSkillData.MSV_LockTime;
 			return m_pOwner.SetFsmState(this, param);

@@ -51,7 +51,7 @@ namespace Galaxy
 			return true;
 		}
 
-		protected override void OnEnterState(StateParam nextParam)
+		protected override void OnEnterState(IFsm<Avatar> pAvatar, StateParam nextParam)
 		{
 			StateMoveParam param = nextParam as StateMoveParam;
 			if(param == null)

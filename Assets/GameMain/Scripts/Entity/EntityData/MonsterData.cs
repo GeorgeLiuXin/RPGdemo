@@ -12,11 +12,15 @@ namespace Galaxy
 		[SerializeField]
 		private int m_nMonsterAValueID;
 
-		public MonsterData(int entityId, int typeId, int monsterAValueID) 
+		//tempcode
+		public LevelInfo info;
+
+		public MonsterData(int entityId, int typeId, int monsterAValueID, LevelInfo _info)
 			: base(entityId, typeId, CampType.Enemy)
 		{
 			m_nMonsterAValueID = monsterAValueID;
 			UpdateAValueByInstance();
+			info = _info;
 		}
 
 		protected override int AValueDataID

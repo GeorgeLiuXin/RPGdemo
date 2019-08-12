@@ -43,7 +43,7 @@ namespace Galaxy
 			return true;
 		}
 
-		protected override void OnEnterState(StateParam nextParam)
+		protected override void OnEnterState(IFsm<Avatar> pAvatar, StateParam nextParam)
 		{
 			StateDeathParam param = nextParam as StateDeathParam;
 			if(param == null)

@@ -1,6 +1,6 @@
 ﻿//------------------------------------------------------------
 // 此文件由工具自动生成，请勿直接修改。
-// 生成时间：2019-08-07 23:11:26.062
+// 生成时间：2019-08-09 08:04:17.503
 //------------------------------------------------------------
 
 using GameFramework;
@@ -43,7 +43,7 @@ namespace Galaxy
         /// <summary>
         /// 获取CD时间。
         /// </summary>
-        public int CDTime
+        public float CDTime
         {
             get;
             private set;
@@ -81,7 +81,7 @@ namespace Galaxy
             m_Id = int.Parse(columnTexts[index++]);
             index++;
             CDAttr = int.Parse(columnTexts[index++]);
-            CDTime = int.Parse(columnTexts[index++]);
+            CDTime = float.Parse(columnTexts[index++]);
             CDCount = int.Parse(columnTexts[index++]);
             CDCommon = int.Parse(columnTexts[index++]);
 
@@ -98,7 +98,7 @@ namespace Galaxy
                 {
                     m_Id = binaryReader.ReadInt32();
                     CDAttr = binaryReader.ReadInt32();
-                    CDTime = binaryReader.ReadInt32();
+                    CDTime = binaryReader.ReadSingle();
                     CDCount = binaryReader.ReadInt32();
                     CDCommon = binaryReader.ReadInt32();
                 }
