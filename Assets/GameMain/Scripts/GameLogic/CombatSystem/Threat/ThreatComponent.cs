@@ -1,267 +1,245 @@
-﻿//using System.Collections;
-//using System.Collections.Generic;
-//using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 
-//namespace Galaxy
-//{
-//	public class Threat
-//	{
-//		public int nAvatarID;
-//		public int nThreat;
-//		public float fValidTime;
-//	}
+namespace Galaxy
+{
+    //todo 嘲讽值需要随时间逐渐下降，以防止越界
+    public class Threat: IComparable
+    {
+        public int nAvatarID;
+        public int nThreat;
+        public float fValidTime;
+        
+        public int CompareTo(object obj)
+        {
+            Threat threat = obj as Threat;
+            if (threat != null)
+            {
+                return CompareTo(threat);
+            }
 
-//	public class ThreatComponent : ComponentBase
-//	{
-//		protected int m_nTargetID;
-//		protected int m_nTargetThreat;
+            return -1;
+        }
+        private int CompareTo(Threat rhs)
+        {
+            if (rhs != null && rhs != this && rhs.nThreat >= nThreat * 1.1f)
+                return 1;
+            return -1;
+        }
+    }
 
-//		protected Dictionary<int, Threat> m_ThreatDict;
-//		private List<int> m_RemoveList;
+    public class ThreatComponent : ComponentBase
+    {
+        private const float fTickTime = 0.5f;
+        private float m_fTimer;
 
-//		protected override void InitComponent()
-//		{
-//			m_ThreatDict = new Dictionary<int, Threat>();
-//			m_RemoveList = new List<int>();
+        protected Threat m_pTarget;
 
-//			m_nTargetID = 0;
-//			m_nTargetThreat = 0;
-//			base.InitComponent();
-//		}
+        protected List<Threat> m_ThreatList;
+        private List<Threat> m_RemoveList;
 
-//		public override void OnPreDestroy()
-//		{
-//			m_ThreatDict.Clear();
-//			m_RemoveList.Clear();
+        protected override void InitComponent()
+        {
+            m_ThreatList = new List<Threat>();
+            m_RemoveList = new List<Threat>();
 
-//			m_nTargetID = 0;
-//			m_nTargetThreat = 0;
-//			base.OnPreDestroy();
-//		}
+            m_pTarget = null;
+            m_fTimer = fTickTime;
+        }
 
-//		public void Update()
-//		{
-//			//仇恨计时
-//			TickThreat(Time.deltaTime);
-//			//刷新目标
-//			TickTarget();
-//		}
+        public override void OnPreDestroy()
+        {
+            m_ThreatList.Clear();
+            m_RemoveList.Clear();
 
-//		private void TickThreat(float fTime)
-//		{
-//			foreach (KeyValuePair<int, Threat> item in m_ThreatDict)
-//			{
-//				Threat pThreat = item.Value;
-//				if (pThreat != null && pThreat.fValidTime > 0)
-//				{
-//					pThreat.fValidTime -= fTime;
-//					if (pThreat.fValidTime <= 0)
-//					{
-//						if (pThreat.nAvatarID == m_nTargetID)
-//						{
-//							ResetTarget();
-//						}
-//						m_RemoveList.Add(item.Key);
-//						continue;
-//					}
-//				}
-//			}
+            m_pTarget = null;
+            m_fTimer = fTickTime;
+        }
 
-//			foreach (int key in m_RemoveList)
-//			{
-//				m_ThreatDict.Remove(key);
-//			}
+        public void Update()
+        {
+            m_fTimer -= Time.deltaTime;
+            if (m_fTimer > 0)
+                return;
 
-//			if (m_ThreatDict.Count == 0)
-//			{
-//				if (Owner != null && Owner.IsFight())
-//				{
-//					Owner.LeaveCombat();
-//				}
-//			}
-//		}
+            m_fTimer += fTickTime;
+            //仇恨计时
+            TickThreat(Time.deltaTime);
+            //刷新目标
+            TickTarget();
+        }
 
-//		public void TickTarget()
-//		{
-//			foreach (KeyValuePair<int, Threat> item in m_ThreatDict)
-//			{
-//				Threat pThreat = item.Value;
-//				if (CompareThreat(pThreat))
-//				{
-//					SetTarget(pThreat.nAvatarID, pThreat.nThreat);
-//				}
-//			}
-//			//当前没有目标, 清空仇恨, 脱战
-//			if (m_nTargetID == 0)
-//			{
-//				ResetTarget();
-//			}
-//		}
-//		private bool CompareThreat(Threat pThreat)
-//		{
-//			if (m_nTargetID == 0)
-//				return true;
-//			if (pThreat != null && pThreat.nThreat >= m_nTargetThreat * 1.1f)
-//				return true;
-//			return false;
-//		}
+        private void TickThreat(float fTime)
+        {
+            foreach (Threat pThreat in m_ThreatList)
+            {
+                if (pThreat == null)
+                    continue;
 
+                pThreat.fValidTime -= fTime;
+                if (pThreat.fValidTime <= 0)
+                {
+                    if (pThreat == m_pTarget)
+                    {
+                        ResetTarget();
+                    }
+                    m_RemoveList.Add(pThreat);
+                }
+            }
 
-//		public void SetTarget(int nAvatarID, int nThreat)
-//		{
-//			m_nTargetID = nAvatarID;
-//			m_nTargetThreat = nThreat;
-//		}
+            foreach (var threat in m_RemoveList)
+            {
+                m_ThreatList.Remove(threat);
+            }
 
-//		public int GetTarget()
-//		{
-//			return m_nTargetID;
-//		}
+            m_ThreatList.Sort();
+        }
 
-//		public int GetThreatByIndex(int id)
-//		{
-//			if (id < 0 || id >= m_ThreatDict.Count)
-//			{
-//				return 0;
-//			}
-//			int index = 0;
-//			foreach (var item in m_ThreatDict)
-//			{
-//				if (index == id)
-//				{
-//					return item.Key;
-//				}
-//				index++;
-//			}
-//			return 0;
-//		}
+        public void TickTarget()
+        {
+            //当前没有目标, 清空仇恨, 可扩展脱战 todo
+            if (m_ThreatList == null || m_ThreatList.Count == 0)
+            {
+                ResetTarget();
+                return;
+            }
 
-//		public void ResetTarget()
-//		{
-//			m_nTargetID = 0;
-//			m_nTargetThreat = 0;
-//		}
+            Threat pThreat = m_ThreatList[0];
+            if (pThreat.CompareTo(m_pTarget) == 1)
+            {
+                SetTarget(pThreat);
+            }
+        }
 
-//		public void OnHurt(Entity pAvatar, int nValue)
-//		{
-//			if (Owner != null)
-//			{
-//				AddThreat(pAvatar, nValue);
-//			}
-//		}
+        private bool CompareThreat(Threat pThreat)
+        {
+            if (m_pTarget == null && pThreat != null)
+                return true;
+            if (pThreat != null && pThreat != m_pTarget && pThreat.nThreat >= m_pTarget.nThreat * 1.1f)
+                return true;
+            return false;
+        }
+        
+        public void SetTarget(Threat pThreat)
+        {
+            m_pTarget = pThreat;
+        }
+        public int GetTarget()
+        {
+            return m_pTarget.nThreat;
+        }
 
-//		public void OnHeal(Entity pAvatar, int nValue)
-//		{
-//			if (Owner == null)
-//				return;
+        public int GetThreatByIndex(int id)
+        {
+            TickThreat(0);
+            if (m_ThreatList == null || m_ThreatList.Count < id || m_ThreatList[id] == null)
+                return 0;
+            return m_ThreatList[id].nAvatarID;
+        }
 
-//			foreach (KeyValuePair<int, Threat> item in m_ThreatDict)
-//			{
-//				Threat pThreat = item.Value;
-//				if (pThreat == null)
-//					continue;
-//				//TODO		当人物管理完成后添加，当治疗时对当前攻击治疗目标的所有人产生仇恨
-//				//ActorObj pTAvatar = Owner->GetSceneAvatar(pThreat.nAvatarID);
-//				//if (pTAvatar)
-//				//{
-//				//	pTAvatar->AddThreat(pAvatar, nValue, true);
-//				//}
-//			}
-//		}
+        public void ResetTarget()
+        {
+            m_pTarget = null;
+        }
 
-//		public void OnTaunt(Entity pAvatar, int nValue)
-//		{
-//			if (Owner == null)
-//				return;
+        /// <summary>
+        /// 被攻击后产生仇恨
+        /// </summary>
+        /// <param name="pAvatar"></param>
+        /// <param name="nValue"></param>
+        public void OnHurt(Avatar pAvatar, int nValue)
+        {
+            if (Owner != null)
+            {
+                AddThreat(pAvatar, nValue);
+            }
+        }
 
-//			//受到嘲讽时，将第一名的加上去
-//			Threat pThreat = GetThreat(pAvatar.GetAvatarID(), true);
-//			pThreat.nThreat += nValue;
-//			if (!CompareThreat(pThreat))
-//			{
-//				int nMaxThreat = Mathf.Max(m_nTargetThreat, pThreat.nThreat);
-//				//嘲讽是否存在可能越界的情况
-//				pThreat.nThreat += nMaxThreat;
-//			}
+        /// <summary>
+        /// 治疗后对当前攻击治疗目标的所有人产生仇恨
+        /// </summary>
+        /// <param name="pAvatar"></param>
+        /// <param name="nValue"></param>
+        public void OnHeal(Avatar pAvatar, int nValue)
+        {
+            if (Owner == null)
+                return;
 
-//			if (pThreat != null)
-//			{
-//				SetTarget(pAvatar.GetAvatarID(), pThreat.nThreat);
-//			}
-//		}
+            foreach (Threat pThreat in m_ThreatList)
+            {
+                if (pThreat == null)
+                    continue;
+                Avatar avatar = GameEntry.Entity.GetGameEntity(pThreat.nAvatarID) as Avatar;
+                if (avatar == null)
+                    continue;
 
-//		public void AddThreat(Entity pAvatar, int nValue)
-//		{
-//			if (Owner == null || pAvatar == null)
-//				return;
-//			if (Owner == pAvatar)
-//				return;
+                avatar.AddThreat(pAvatar, nValue);
+            }
+        }
 
-//			Threat pThreat = GetThreat(pAvatar.GetAvatarID(), true);
-//			if (pThreat == null)
-//				return;
+        public void OnTaunt(Avatar pAvatar, int nValue)
+        {
+            if (Owner == null)
+                return;
 
-//			if (nValue >= 0 || pThreat.nThreat <= 0)
-//			{
-//				pThreat.nThreat += nValue;
-//			}
-//			pThreat.nThreat = Mathf.Max(-1, pThreat.nThreat);
-//			if (CompareThreat(pThreat))
-//			{
-//				SetTarget(pThreat.nAvatarID, pThreat.nThreat);
-//			}
+            //受到嘲讽时，将第一名的加上去
+            Threat pThreat = GetThreat(pAvatar.Id, true);
+            if (pThreat == null)
+                return;
 
-//			//设置战斗状态
-//			if (!Owner.IsFight())
-//			{
-//				Owner.EnterCombat();
-//			}
-//		}
+            pThreat.nThreat += nValue;
+            if (!CompareThreat(pThreat))
+            {
+                int nMaxThreat = Mathf.Max(m_pTarget.nThreat, pThreat.nThreat);
+                pThreat.nThreat += nMaxThreat;
+            }
 
-//		public void RemoveThreat(int nAvatarID)
-//		{
-//			if (m_ThreatDict.ContainsKey(nAvatarID))
-//			{
-//				m_ThreatDict.Remove(nAvatarID);
-//			}
-//			if (m_nTargetID == nAvatarID)
-//			{
-//				ResetTarget();
-//				TickTarget();
-//			}
-//		}
+            SetTarget(pThreat);
+        }
 
-//		public Threat GetThreat(int nAvatarID, bool bCreate)
-//		{
-//			Threat pThreat = null;
-//			if (m_ThreatDict.ContainsKey(nAvatarID))
-//			{
-//				pThreat = m_ThreatDict[nAvatarID];
-//			}
-//			else if (bCreate)
-//			{
-//				pThreat = new Threat();
-//				pThreat.nAvatarID = nAvatarID;
-//				pThreat.nThreat = 0;
-//				m_ThreatDict.Add(nAvatarID, pThreat);
-//			}
-//			return pThreat;
-//		}
+        public void AddThreat(Avatar pAvatar, int nValue)
+        {
+            if (Owner == null || pAvatar == null)
+                return;
+            if (Owner == pAvatar)
+                return;
 
-//		public bool IsInThreatList(int nAvatarID)
-//		{
-//			return m_ThreatDict.ContainsKey(nAvatarID);
-//		}
+            Threat pThreat = GetThreat(pAvatar.Id, true);
+            if (pThreat == null)
+                return;
 
-//		public bool IsThreatListEmpty()
-//		{
-//			return m_ThreatDict.Count == 0;
-//		}
+            if (nValue >= 0 || pThreat.nThreat <= 0)
+            {
+                pThreat.nThreat += nValue;
+            }
+            pThreat.nThreat = Mathf.Max(-1, pThreat.nThreat);
+            if (CompareThreat(pThreat))
+            {
+                SetTarget(pThreat);
+            }
 
-//		public int GetThreatCount()
-//		{
-//			return m_ThreatDict.Count;
-//		}
-//	}
+            //设置战斗状态 进入战斗状态 todo
+        }
 
-//}
+        private int m_nTempPredicateAvatar;
+        public Threat GetThreat(int nAvatarID, bool bCreate)
+        {
+            m_nTempPredicateAvatar = nAvatarID;
+            Threat pThreat = m_ThreatList.Find(GetThreat);
+            if (pThreat != null || !bCreate)
+                return pThreat;
+
+            pThreat = new Threat();
+            m_ThreatList.Add(pThreat);
+            pThreat.nAvatarID = nAvatarID;
+            pThreat.nThreat = 0;
+            return pThreat;
+        }
+
+        private bool GetThreat(Threat obj)
+        {
+            return obj.nAvatarID == m_nTempPredicateAvatar;
+        }
+    }
+}

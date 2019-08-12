@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityGameFramework.Runtime;
 
 namespace Galaxy
@@ -8,23 +6,14 @@ namespace Galaxy
 	public class CameraManager : GameFrameworkComponent
 	{
 		private CameraDemo m_CurCamera;
-
-		void Start()
-		{
-
-		}
-		
-		void Update()
-		{
-
-		}
-
-		void OnDestroy()
-		{
-
-		}
-
-
+        
+        public void InitEngineCamera(CameraDemo _camera)
+        {
+            if (_camera == null)
+                return;
+            m_CurCamera = _camera;
+        }
+        
 		public Vector3 GetWorldToViewportPoint(Vector3 vWorldPos)
 		{
 			if(m_CurCamera == null)

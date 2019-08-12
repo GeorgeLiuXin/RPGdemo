@@ -8,7 +8,7 @@ namespace Galaxy
 	{
 		private LevelTest m_tempLevel;
 
-		private Player m_Player = null;
+        private Player m_Player;
 
 		public override GameMode GameMode
 		{
@@ -25,7 +25,7 @@ namespace Galaxy
 
 			GameEntry.Entity.ShowEntity(
 				typeof(Player),
-				"Player",
+				Constant.Entity.PlayerGroupName,
 				Constant.AssetPriority.PlayerAsset,
 				new PlayerData(GameEntry.Entity.GenerateSerialId(), 10000, 1)
 				{
@@ -70,9 +70,12 @@ namespace Galaxy
 		}
 
 		protected void OnShowEntityFailure(object sender, GameEventArgs e)
-		{
-			ShowEntityFailureEventArgs ne = (ShowEntityFailureEventArgs)e;
-			Log.Warning("Show entity failure with error message '{0}'.", ne.ErrorMessage);
-		}
-	}
+        {
+            ShowEntityFailureEventArgs ne = (ShowEntityFailureEventArgs)e;
+            if (ne != null)
+            {
+                Log.Warning("Show entity failure with error message '{0}'.", ne.ErrorMessage);
+            }
+        }
+    }
 }

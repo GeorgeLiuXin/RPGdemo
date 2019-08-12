@@ -41,7 +41,7 @@ namespace Galaxy
 			{
 				GameEntry.Entity.ShowEntity(
 					typeof(Monster),
-					"Monster",
+					Constant.Entity.MonsterGroupName,
 					Constant.AssetPriority.EnemyAsset,
 					new MonsterData(GameEntry.Entity.GenerateSerialId(),
 								item.nModelID, item.nMosterAValue, item));

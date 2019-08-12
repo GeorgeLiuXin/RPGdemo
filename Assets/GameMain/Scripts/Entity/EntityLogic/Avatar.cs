@@ -1,16 +1,12 @@
 ﻿using GameFramework;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityGameFramework.Runtime;
 
 namespace Galaxy
 {
 	public partial class Avatar : Entity
-	{
-		[SerializeField]
-		private AvatarData m_AvatarData = null;
+    {
+        [SerializeField] private AvatarData m_AvatarData;
 		
 		private AnimationComponent m_animCom;
 		public AnimationComponent AnimCom
@@ -59,15 +55,28 @@ namespace Galaxy
 				}
 				return m_cdCom;
 			}
-		}
+        }
+        private ThreatComponent m_threatCom;
+        public ThreatComponent ThreatCom
+        {
+            get
+            {
+                if (m_threatCom == null)
+                {
+                    m_threatCom = GetComponent<ThreatComponent>();
+                }
+                return m_threatCom;
+            }
+        }
 
-		protected virtual void InitComponent()
+        protected virtual void InitComponent()
 		{
 			gameObject.AddComponent<AnimationComponent>().SetOwner(this);
 			gameObject.AddComponent<MoveComponent>().SetOwner(this);
 			gameObject.AddComponent<SkillComponent>().SetOwner(this);
 			gameObject.AddComponent<GCDComponent>().SetOwner(this);
-		}
+            gameObject.AddComponent<ThreatComponent>().SetOwner(this);
+        }
 
 		public bool IsDead
 		{
@@ -85,7 +94,15 @@ namespace Galaxy
 			}
 		}
 
-		protected override void OnInit(object userData)
+        public CampType Camp
+        {
+            get
+            {
+                return m_AvatarData!=null ? m_AvatarData.Camp : CampType.Unknown;
+            }
+        }
+
+        protected override void OnInit(object userData)
 		{
 			base.OnInit(userData);
 			gameObject.SetLayerRecursively(Constant.Layer.AvatarLayerId);
@@ -101,7 +118,6 @@ namespace Galaxy
 			if(m_AvatarData == null)
 			{
 				Log.Error("AvatarData is invalid.");
-				return;
 			}
 		}
 
@@ -109,8 +125,10 @@ namespace Galaxy
 		{
 			GameEntry.Entity.HideEntity(this);
 		}
-		
-		public void MoveToPoint(Vector3 vPos)
+
+        ////////////////////////////////////////////////////
+        //移动参数
+        public void MoveToPoint(Vector3 vPos)
 		{
 			if(MoveCom == null)
 			{
@@ -151,8 +169,10 @@ namespace Galaxy
 			}
 			AnimCom.PlayAnimation(nAnimID);
 		}
-
-		public float HP
+        
+        ////////////////////////////////////////////////////
+        //常用参数
+        public float HP
 		{
 			get
 			{
@@ -192,7 +212,15 @@ namespace Galaxy
 			m_AvatarData.HP = hp;
 		}
 
-		public void SetAValueData(AvatarAValueDefine define, int type, object value)
+        public void SetHpCost(float nCostHp)
+        {
+            float hp = Mathf.Max(0, m_AvatarData.HP - nCostHp);
+            m_AvatarData.HP = hp;
+        }
+
+        ////////////////////////////////////////////////////
+        //属性集相关
+        public void SetAValueData(AvatarAValueDefine define, int type, object value)
 		{
 			m_AvatarData.SetAValueData(define, type, value);
 		}
@@ -216,10 +244,17 @@ namespace Galaxy
 			return m_AvatarData.GetAValue();
 		}
 
-		public void SetHpCost(float nCostHp)
-		{
-			float hp = Mathf.Max(0, m_AvatarData.HP - nCostHp);
-			m_AvatarData.HP = hp;
-		}
-	}
+        ////////////////////////////////////////////////////
+        //仇恨相关
+        public void AddThreat(Avatar pAvatar, int nValue)
+        {
+            if (ThreatCom == null)
+            {
+                Log.Error("ThreatCom组件不存在!");
+                return;
+            }
+
+            ThreatCom.AddThreat(pAvatar, nValue);
+        }
+    }
 }

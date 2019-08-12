@@ -1,6 +1,4 @@
 ﻿using GameFramework.Event;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityGameFramework.Runtime;
 
@@ -25,7 +23,7 @@ namespace Galaxy
 		[SerializeField]
 		private float rotateSpeed = 2;
 		[SerializeField]
-		private float distance = 0f;
+		private float distance = 3f;
 		[SerializeField]
 		private float scrollSpeed = 3;
 		//////////////////////////////////////////////
@@ -36,7 +34,8 @@ namespace Galaxy
 		{
 			GameEntry.Event.Subscribe(CameraEvent.EventId, OnCameraEvent);
 			InitCameraConfig();
-		}
+            GameEntry.CameraMgr.InitEngineCamera(this);
+        }
 
 		private void OnDestroy()
 		{
