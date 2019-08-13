@@ -191,11 +191,11 @@ namespace Galaxy
 		public virtual void ProcessEffect()
 		{
 			int nLauncherType = m_pSkillData.MSV_LauncherLogic;
-			//GSkillLauncherLogic* pLauncher = GSkillLogicManager::Instance().GetLauncherLogic(nLauncherType);
-			//if(pLauncher)
-			//{
-			//	pLauncher->Process(this, GetCaster());
-			//}
+			GSkillLauncher pLauncher = GSkillLogicManager.Instance.GetLauncherLogic(nLauncherType);
+			if(pLauncher != null)
+			{
+				pLauncher.Process(this, GetCaster());
+			}
 		}
 
 		////todo 技能修正

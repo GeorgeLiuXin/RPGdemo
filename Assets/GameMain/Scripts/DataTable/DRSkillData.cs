@@ -1,6 +1,6 @@
 ﻿//------------------------------------------------------------
 // 此文件由工具自动生成，请勿直接修改。
-// 生成时间：2019-08-09 08:04:17.477
+// 生成时间：2019-08-12 23:59:03.115
 //------------------------------------------------------------
 
 using GameFramework;
@@ -544,6 +544,24 @@ namespace Galaxy
             private set;
         }
 
+        /// <summary>
+        /// 获取前置瞄准模式。
+        /// </summary>
+        public int MSV_PreSkillMode
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// 获取辅助瞄准模式。
+        /// </summary>
+        public int MSV_AimHelperMode
+        {
+            get;
+            private set;
+        }
+
         public override bool ParseDataRow(GameFrameworkSegment<string> dataRowSegment)
         {
             // Metroidvania3D 示例代码，正式项目使用时请调整此处的生成代码，以处理 GCAlloc 问题！
@@ -614,6 +632,8 @@ namespace Galaxy
             MSV_AreaFilter = int.Parse(columnTexts[index++]);
             MSV_AreaTarCnt = int.Parse(columnTexts[index++]);
             MSV_AnimID = int.Parse(columnTexts[index++]);
+            MSV_PreSkillMode = int.Parse(columnTexts[index++]);
+            MSV_AimHelperMode = int.Parse(columnTexts[index++]);
 
             GeneratePropertyArray();
             return true;
@@ -684,6 +704,8 @@ namespace Galaxy
                     MSV_AreaFilter = binaryReader.ReadInt32();
                     MSV_AreaTarCnt = binaryReader.ReadInt32();
                     MSV_AnimID = binaryReader.ReadInt32();
+                    MSV_PreSkillMode = binaryReader.ReadInt32();
+                    MSV_AimHelperMode = binaryReader.ReadInt32();
                 }
             }
 

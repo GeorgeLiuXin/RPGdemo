@@ -53,6 +53,33 @@ namespace Galaxy
 					}
 				}
 			}
+
+			if(Input.GetKeyDown(KeyCode.Tab))
+			{
+				Player player = Owner as Player;
+				if(player == null)
+					return;
+				
+				player.AimCom.GetTabTarget();
+			}
+
+			if(Input.GetKeyDown(KeyCode.L))
+			{
+				Player player = Owner as Player;
+				if(player == null)
+					return;
+
+				player.SkillCom.AddSkill(1001);
+			}
+			if(Input.GetKeyDown(KeyCode.Z))
+			{
+				Player player = Owner as Player;
+				if(player == null)
+					return;
+
+				player.PreSkillCom.PreSkill(1001);
+				player.PreSkillCom.UseSkill();
+			}
 		}
 		
 		void ShowChilkEffect(Vector3 hitPoint)

@@ -6,7 +6,8 @@ namespace Galaxy
 {
 	public partial class Avatar : Entity
     {
-        [SerializeField] private AvatarData m_AvatarData;
+        [SerializeField]
+		private AvatarData m_AvatarData;
 		
 		private AnimationComponent m_animCom;
 		public AnimationComponent AnimCom

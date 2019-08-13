@@ -52,10 +52,8 @@ namespace Galaxy
 			if(!pCaster || !pCaster.SkillCom)
 				return false;
 
-			Avatar pTarget = null;
 			if(m_pSkillData.IsTargetSelfOnly())
 			{
-				pTarget = pCaster;
 				m_TargetInfo.m_nTargetID = pCaster.Id;
 				m_TargetInfo.m_vSrcPos = pCaster.GetPos();
 				m_TargetInfo.m_vTarPos = pCaster.GetPos();
@@ -63,7 +61,6 @@ namespace Galaxy
 			}
 			else
 			{
-				pTarget = GameEntry.Entity.GetGameEntity(pNotify.m_nTargetID) as Avatar;
 				m_TargetInfo.m_nTargetID = pNotify.m_nTargetID;
 				m_TargetInfo.m_vTarPos = pNotify.m_vTarPos;
 				m_TargetInfo.m_vSrcPos = pNotify.m_vSrcPos;

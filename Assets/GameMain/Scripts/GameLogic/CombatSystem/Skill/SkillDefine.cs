@@ -128,43 +128,6 @@ namespace Galaxy
 		NotifyObject_Effect,
 	};
 
-	//todo 改成引用池管理
-	public class GTargetInfo
-	{
-        public int m_nTargetID;
-        public Vector3 m_vSrcPos;
-        public Vector3 m_vTarPos;
-        public Vector3 m_vMoveTarPos;
-		public Vector3 m_vAimDir;
-        public GTargetInfo()
-        {
-			m_nTargetID = 0;
-			m_vSrcPos = Vector3.zero;
-			m_vTarPos = Vector3.zero;
-			m_vAimDir = Vector3.zero;
-			m_vMoveTarPos = Vector3.zero;
-		}
-		public void Reset()
-		{
-			m_nTargetID = 0;
-			m_vSrcPos = Vector3.zero;
-			m_vTarPos = Vector3.zero;
-			m_vAimDir = Vector3.zero;
-			m_vMoveTarPos = Vector3.zero;
-		}
-	}
-
-    public class GSkillExcludeList : HashSet<int>
-    {
-        public GSkillExcludeList()
-        {
-            m_bCount = false;
-            m_nCount = 0;
-        }
-        public bool m_bCount;
-        public int m_nCount;
-    }
-
     public enum eTriggerNotifyType
     {
         NotifyType_Skill = 0,           //技能
@@ -218,18 +181,6 @@ namespace Galaxy
         TriggerNotify_BulletHit = 1 << 1,   //子弹命中事件
         TriggerNotify_BulletDead = 1 << 2,  //子弹死亡事件
     };
-
-	public class ModifyCalculation : IReference
-	{
-		public eTriggerNotifyType type;
-		public float fValue;
-
-		public void Clear()
-		{
-			type = eTriggerNotifyType.NotifyType_Count;
-			fValue = 0;
-		}
-	}
 
     public enum eSkillCalculation
     {
@@ -298,4 +249,51 @@ namespace Galaxy
         Hint_TargetHasDead,
         Hint_NoTarget,
     }
+
+	//todo 改成引用池管理
+	public class GTargetInfo
+	{
+		public int m_nTargetID;
+		public Vector3 m_vSrcPos;
+		public Vector3 m_vTarPos;
+		public Vector3 m_vAimDir;
+		public GTargetInfo()
+		{
+			m_nTargetID = 0;
+			m_vSrcPos = Vector3.zero;
+			m_vTarPos = Vector3.zero;
+			m_vAimDir = Vector3.zero;
+		}
+		public void Reset()
+		{
+			m_nTargetID = 0;
+			m_vSrcPos = Vector3.zero;
+			m_vTarPos = Vector3.zero;
+			m_vAimDir = Vector3.zero;
+		}
+	}
+
+	public class GSkillExcludeList : HashSet<int>
+	{
+		public GSkillExcludeList()
+		{
+			m_bCount = false;
+			m_nCount = 0;
+		}
+		public bool m_bCount;
+		public int m_nCount;
+	}
+
+	public class ModifyCalculation : IReference
+	{
+		public eTriggerNotifyType type;
+		public float fValue;
+
+		public void Clear()
+		{
+			type = eTriggerNotifyType.NotifyType_Count;
+			fValue = 0;
+		}
+	}
+
 }
