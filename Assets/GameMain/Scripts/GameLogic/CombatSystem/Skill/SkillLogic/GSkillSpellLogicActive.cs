@@ -60,9 +60,8 @@ namespace Galaxy
 		public override void Tick(float fFrameTime)
 		{
 			base.Tick(fFrameTime);
-			m_fLockTime -= fFrameTime;
-			m_fLastTime -= fFrameTime;
-			if(m_fLastTime <= 0)
+			m_fCurTime += fFrameTime;
+			if(m_fCurTime >= m_fLastTime)
 			{
 				Finish();
 			}
@@ -73,11 +72,11 @@ namespace Galaxy
 			if(m_nCurEffectCount >= m_nEffectCount)
 				return;
 
-			m_fCurTime += fFrameTime;
-			if(m_fCurTime >= m_fEffectTime)
+			m_fCurEffectTime += fFrameTime;
+			if(m_fCurEffectTime >= m_fEffectTime)
 			{
 				++m_nCurEffectCount;
-				m_fCurTime -= m_fEffectTime;
+				m_fCurEffectTime -= m_fEffectTime;
 				ProcessEffect();
 			}
 		}
@@ -110,7 +109,7 @@ namespace Galaxy
 
 		public override bool IsLock()
 		{
-			return m_fLockTime > 0;
+			return m_fLockTime > m_fCurTime;
 		}
 		
 		public override void ProcessEffect()

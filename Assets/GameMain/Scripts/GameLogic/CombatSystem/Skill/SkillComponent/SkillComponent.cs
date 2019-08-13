@@ -312,7 +312,7 @@ namespace Galaxy
 		{
 			if(m_pSpellLogic == null)
 				return;
-			if(m_pSpellLogic.IsFinished())
+			if(!m_pSpellLogic.IsFinished())
 			{
 				m_pSpellLogic.Tick(fFrameTime);
 			}
