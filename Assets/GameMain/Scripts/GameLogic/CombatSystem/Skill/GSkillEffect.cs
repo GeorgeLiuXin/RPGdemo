@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using GameFramework;
 
 namespace Galaxy
@@ -13,25 +10,24 @@ namespace Galaxy
     {
 		public abstract bool Process(GSkillCalculation sCalculation, GTargetInfo sTarInfo, SkillAValueData sSkillAValue);
 
-		public void ProcessHurtThreat(PlayerAValueData sCasterAValue, Avatar pCaster, Avatar pTarget, bool bHit)
-		{
-			//if(!pCaster || !pTarget)
-			//	return;
+        public void ProcessHurtThreat(PlayerAValueData sCasterAValue, Avatar pCaster, Avatar pTarget, float fUserData, bool bHit)
+        {
+            if (pCaster == null || pTarget == null || pTarget.ThreatCom == null)
+                return;
 
-			//int nThreat = GetThreatValue(sCasterAValue, bHit);
-			//if(pTarget.GetThreatComponent())
-			//{
-			//	pTarget.GetThreatComponent().OnHurt(pCaster, nThreat);
-			//}
-		}
+            float fThreat = GetThreatValue(sCasterAValue, fUserData, bHit);
+            pTarget.ThreatCom.OnHurt(pCaster, fThreat);
+        }
 
-		public float GetThreatValue(PlayerAValueData sCasterAValue, bool bHit)
+        public float GetThreatValue(PlayerAValueData sCasterAValue, float fUserData, bool bHit)
 		{
-			//float fThreat = sCasterAValue.Values[AValue::threat] * (1 + sCasterAValue.Values[AValue::threat_r]);
-			//fThreat = Mathf.Max(fThreat * ((bHit) ? 1 : 0.1), 1);
-			//return fThreat;
-			return 0;
-		}
+            //根据不同职业的不同属性集获得各自的嘲讽系数
+            //float fThreat = sCasterAValue.Values[AValue::threat] * (1 + sCasterAValue.Values[AValue::threat_r]);
+            //fThreat = Mathf.Max(fThreat * ((bHit) ? 1 : 0.1), 1);
+
+            float fThreat = Mathf.Max(fUserData * ((bHit) ? 1 : 0.1f), 1);
+            return fThreat;
+        }
 
 	}
 
@@ -78,7 +74,7 @@ namespace Galaxy
 
 			bool bHit = ((gameEvent.EffectType & (int)eTriggerNotify.TriggerNotify_Hit) > 0);
 			//产生仇恨
-			ProcessHurtThreat(sCalculation.m_CasterAValue, pCaster, pTarget, bHit);
+            ProcessHurtThreat(sCalculation.m_CasterAValue, pCaster, pTarget, gameEvent.EffectValue, bHit);
 
 			GameEntry.Event.Fire(this, gameEvent);
 			return bHit;
@@ -127,7 +123,7 @@ namespace Galaxy
 			//////////////////////////////////////////////////////////////////////////
 
 			//产生仇恨
-			ProcessHurtThreat(sCalculation.m_CasterAValue, pCaster, pTarget, true);
+            ProcessHurtThreat(sCalculation.m_CasterAValue, pCaster, pTarget, gameEvent.EffectValue, true);
 
 			GameEntry.Event.Fire(this, gameEvent);
 			return true;

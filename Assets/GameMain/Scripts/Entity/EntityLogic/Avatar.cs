@@ -247,7 +247,7 @@ namespace Galaxy
 
         ////////////////////////////////////////////////////
         //仇恨相关
-        public void AddThreat(Avatar pAvatar, int nValue)
+        public void AddThreat(Avatar pAvatar, float fValue)
         {
             if (ThreatCom == null)
             {
@@ -255,7 +255,22 @@ namespace Galaxy
                 return;
             }
 
-            ThreatCom.AddThreat(pAvatar, nValue);
+            ThreatCom.AddThreat(pAvatar, fValue);
+        }
+
+        ///////////////////////////////////////////////////////
+        //状态标记位设置
+        public void EnterCombat()
+        {
+            SetState(StateDefine.State_Fight);
+        }
+        public void LeaveCombat()
+        {
+            ResetState(StateDefine.State_Fight);
+        }
+        public bool IsFight()
+        {
+            return CheckState(StateDefine.State_Fight);
         }
     }
 }

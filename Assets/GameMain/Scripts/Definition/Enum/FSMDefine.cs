@@ -26,10 +26,14 @@ namespace Galaxy
 		State_StronglyControl = 5,
 		State_Death = 6,
 
-		State_ActiveState = 48,
+		State_ActiveState = 48,             //以上为主动状态
 
 		State_LockActiveSkill = 49,
 		State_LockMove = 50,
+
+        State_LockState = 64,             //以上为锁定状态
+
+        State_Fight = 65,
 
 		State_Size = 127,
 	}

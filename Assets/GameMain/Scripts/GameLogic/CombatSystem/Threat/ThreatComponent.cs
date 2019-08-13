@@ -8,7 +8,7 @@ namespace Galaxy
     public class Threat: IComparable
     {
         public int nAvatarID;
-        public int nThreat;
+        public float fThreat;
         public float fValidTime;
         
         public int CompareTo(object obj)
@@ -23,7 +23,7 @@ namespace Galaxy
         }
         private int CompareTo(Threat rhs)
         {
-            if (rhs != null && rhs != this && rhs.nThreat >= nThreat * 1.1f)
+            if (rhs != null && rhs != this && rhs.fThreat >= fThreat * 1.1f)
                 return 1;
             return -1;
         }
@@ -31,7 +31,6 @@ namespace Galaxy
 
     public class ThreatComponent : ComponentBase
     {
-        private const float fTickTime = 0.5f;
         private float m_fTimer;
 
         protected Threat m_pTarget;
@@ -45,7 +44,7 @@ namespace Galaxy
             m_RemoveList = new List<Threat>();
 
             m_pTarget = null;
-            m_fTimer = fTickTime;
+            m_fTimer = Constant.Threat.ThreatRefreshTime;
         }
 
         public override void OnPreDestroy()
@@ -54,7 +53,7 @@ namespace Galaxy
             m_RemoveList.Clear();
 
             m_pTarget = null;
-            m_fTimer = fTickTime;
+            m_fTimer = Constant.Threat.ThreatRefreshTime;
         }
 
         public void Update()
@@ -63,7 +62,7 @@ namespace Galaxy
             if (m_fTimer > 0)
                 return;
 
-            m_fTimer += fTickTime;
+            m_fTimer += Constant.Threat.ThreatRefreshTime;
             //仇恨计时
             TickThreat(Time.deltaTime);
             //刷新目标
@@ -98,44 +97,24 @@ namespace Galaxy
 
         public void TickTarget()
         {
-            //当前没有目标, 清空仇恨, 可扩展脱战 todo
+            //当前没有目标, 清空仇恨, 脱战
             if (m_ThreatList == null || m_ThreatList.Count == 0)
             {
                 ResetTarget();
+                Owner.LeaveCombat();
                 return;
             }
 
             Threat pThreat = m_ThreatList[0];
-            if (pThreat.CompareTo(m_pTarget) == 1)
+            if (pThreat.CompareTo(m_pTarget) > 0)
             {
                 SetTarget(pThreat);
             }
-        }
-
-        private bool CompareThreat(Threat pThreat)
-        {
-            if (m_pTarget == null && pThreat != null)
-                return true;
-            if (pThreat != null && pThreat != m_pTarget && pThreat.nThreat >= m_pTarget.nThreat * 1.1f)
-                return true;
-            return false;
         }
         
         public void SetTarget(Threat pThreat)
         {
             m_pTarget = pThreat;
-        }
-        public int GetTarget()
-        {
-            return m_pTarget.nThreat;
-        }
-
-        public int GetThreatByIndex(int id)
-        {
-            TickThreat(0);
-            if (m_ThreatList == null || m_ThreatList.Count < id || m_ThreatList[id] == null)
-                return 0;
-            return m_ThreatList[id].nAvatarID;
         }
 
         public void ResetTarget()
@@ -147,12 +126,12 @@ namespace Galaxy
         /// 被攻击后产生仇恨
         /// </summary>
         /// <param name="pAvatar"></param>
-        /// <param name="nValue"></param>
-        public void OnHurt(Avatar pAvatar, int nValue)
+        /// <param name="fValue"></param>
+        public void OnHurt(Avatar pAvatar, float fValue)
         {
             if (Owner != null)
             {
-                AddThreat(pAvatar, nValue);
+                AddThreat(pAvatar, fValue);
             }
         }
 
@@ -160,8 +139,8 @@ namespace Galaxy
         /// 治疗后对当前攻击治疗目标的所有人产生仇恨
         /// </summary>
         /// <param name="pAvatar"></param>
-        /// <param name="nValue"></param>
-        public void OnHeal(Avatar pAvatar, int nValue)
+        /// <param name="fValue"></param>
+        public void OnHeal(Avatar pAvatar, float fValue)
         {
             if (Owner == null)
                 return;
@@ -174,31 +153,31 @@ namespace Galaxy
                 if (avatar == null)
                     continue;
 
-                avatar.AddThreat(pAvatar, nValue);
+                avatar.AddThreat(pAvatar, fValue);
             }
         }
 
-        public void OnTaunt(Avatar pAvatar, int nValue)
+        public void OnTaunt(Avatar pAvatar, float fValue)
         {
             if (Owner == null)
                 return;
 
-            //受到嘲讽时，将第一名的加上去
             Threat pThreat = GetThreat(pAvatar.Id, true);
             if (pThreat == null)
                 return;
 
-            pThreat.nThreat += nValue;
-            if (!CompareThreat(pThreat))
+            //受到嘲讽时，将第一名的加上去
+            pThreat.fThreat += fValue;
+            pThreat.fValidTime = Constant.Threat.LeaveCombatTimer;
+            if (!(pThreat.CompareTo(m_pTarget) > 0))
             {
-                int nMaxThreat = Mathf.Max(m_pTarget.nThreat, pThreat.nThreat);
-                pThreat.nThreat += nMaxThreat;
+                float fMaxThreat = Mathf.Max(m_pTarget.fThreat, pThreat.fThreat);
+                pThreat.fThreat += fMaxThreat;
             }
-
             SetTarget(pThreat);
         }
 
-        public void AddThreat(Avatar pAvatar, int nValue)
+        public void AddThreat(Avatar pAvatar, float fValue)
         {
             if (Owner == null || pAvatar == null)
                 return;
@@ -209,17 +188,22 @@ namespace Galaxy
             if (pThreat == null)
                 return;
 
-            if (nValue >= 0 || pThreat.nThreat <= 0)
+            if (fValue >= 0 || pThreat.fThreat <= 0)
             {
-                pThreat.nThreat += nValue;
+                pThreat.fThreat += fValue;
             }
-            pThreat.nThreat = Mathf.Max(-1, pThreat.nThreat);
-            if (CompareThreat(pThreat))
+            pThreat.fThreat = Mathf.Max(0, pThreat.fThreat);
+            pThreat.fValidTime = Constant.Threat.LeaveCombatTimer;
+            if ((pThreat.CompareTo(m_pTarget) > 0))
             {
                 SetTarget(pThreat);
             }
 
-            //设置战斗状态 进入战斗状态 todo
+            //进入战斗状态
+            if (m_pTarget != null)
+            {
+                Owner.EnterCombat();
+            }
         }
 
         private int m_nTempPredicateAvatar;
@@ -233,7 +217,8 @@ namespace Galaxy
             pThreat = new Threat();
             m_ThreatList.Add(pThreat);
             pThreat.nAvatarID = nAvatarID;
-            pThreat.nThreat = 0;
+            pThreat.fThreat = 0;
+            pThreat.fValidTime = Constant.Threat.LeaveCombatTimer;
             return pThreat;
         }
 
@@ -241,5 +226,19 @@ namespace Galaxy
         {
             return obj.nAvatarID == m_nTempPredicateAvatar;
         }
+        
+        public float GetTarget()
+        {
+            return m_pTarget.fThreat;
+        }
+
+        public int GetThreatByIndex(int id)
+        {
+            TickThreat(0);
+            if (m_ThreatList == null || m_ThreatList.Count < id || m_ThreatList[id] == null)
+                return 0;
+            return m_ThreatList[id].nAvatarID;
+        }
+
     }
 }
