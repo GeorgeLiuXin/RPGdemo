@@ -61,6 +61,18 @@ namespace Galaxy
 			gameObject.AddComponent<AimComponent>().SetOwner(this);
 		}
 
+		protected override void ReleaseComponent()
+		{
+			base.ReleaseComponent();
+
+			Destroy(m_localController);
+			m_localController = null;
+			Destroy(m_preSkillCom);
+			m_preSkillCom = null;
+			Destroy(m_aimCom);
+			m_aimCom = null;
+		}
+
 		protected override void OnShow(object userData)
 		{
 			base.OnShow(userData);
@@ -75,6 +87,10 @@ namespace Galaxy
 			PlayAnimation((int)CommonAnimation.Idle);
 			GameEntry.Event.Fire(this, ReferencePool.Acquire<CameraEvent>().Fill(this, true, null));
 		}
-		
+
+		protected override void OnDead(Avatar attacker)
+		{
+			GameEntry.Fsm.DestroyFsm(m_fsm);
+		}
 	}
 }

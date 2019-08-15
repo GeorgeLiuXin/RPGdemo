@@ -20,7 +20,7 @@ namespace Galaxy
 		void Update()
 		{
 			Vector3 vPosition;
-			if(Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
+			if(Input.GetMouseButtonDown(0) /*&& !EventSystem.current.IsPointerOverGameObject()*/)
 			{
 				Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 				RaycastHit info;

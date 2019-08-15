@@ -95,6 +95,10 @@ namespace Galaxy
 			if(pAvatar != null)
 			{
 				m_CurTarget = pAvatar;
+
+				ChangeTargetEvent e = new ChangeTargetEvent();
+				e.TargetID = m_CurTarget.Id;
+				GameEntry.Event.Fire(Owner, e);
 			}
 		}
 

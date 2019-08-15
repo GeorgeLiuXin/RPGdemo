@@ -73,19 +73,29 @@ namespace Galaxy
             m_nNextIndex = 0;
         }
 
-        public override void OnPreDestroy()
-        {
-            if (m_aifsm != null)
-            {
-                GameEntry.Fsm.DestroyFsm(m_aifsm);
-            }
-            if (m_SkillList != null)
-            {
-                m_SkillList.Clear();
-            }
-        }
+		public void OnDead()
+		{
+			ResetData();
+		}
 
-        public void Update()
+        public override void OnPreDestroy()
+		{
+			ResetData();
+		}
+
+		private void ResetData()
+		{
+			if(m_aifsm != null)
+			{
+				GameEntry.Fsm.DestroyFsm(m_aifsm);
+			}
+			if(m_SkillList != null)
+			{
+				m_SkillList.Clear();
+			}
+		}
+
+		public void Update()
         {
 
         }

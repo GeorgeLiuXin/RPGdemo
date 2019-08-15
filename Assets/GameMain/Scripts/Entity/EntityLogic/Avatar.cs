@@ -79,12 +79,18 @@ namespace Galaxy
             gameObject.AddComponent<ThreatComponent>().SetOwner(this);
         }
 
-		public bool IsDead
+		protected virtual void ReleaseComponent()
 		{
-			get
-			{
-				return m_AvatarData.HP <= 0;
-			}
+			Destroy(m_animCom);
+			m_animCom = null;
+			Destroy(m_moveCom);
+			m_moveCom = null;
+			Destroy(m_skillCom);
+			m_skillCom = null;
+			Destroy(m_cdCom);
+			m_cdCom = null;
+			Destroy(m_threatCom);
+			m_threatCom = null;
 		}
 		
 		public float ModelRadius
@@ -111,6 +117,12 @@ namespace Galaxy
 			InitFsm();
 		}
 
+		protected override void OnHide(object userData)
+		{
+			ReleaseComponent();
+			base.OnHide(userData);
+		}
+
 		protected override void OnShow(object userData)
 		{
 			base.OnShow(userData);
@@ -125,7 +137,6 @@ namespace Galaxy
 		protected virtual void OnDead(Avatar attacker)
         {
             GameEntry.Fsm.DestroyFsm(m_fsm);
-            GameEntry.Entity.HideEntity(this);
         }
 
         ////////////////////////////////////////////////////
@@ -201,11 +212,16 @@ namespace Galaxy
 				return m_AvatarData.HPRatio;
 			}
 		}
-
+		
 		public void SetDamage(int nCasterID, float fValue)
 		{
 			float hp = Mathf.Max(0, m_AvatarData.HP - fValue);
 			m_AvatarData.HP = hp;
+			if(m_AvatarData.HP <= 0)
+			{
+				Dead();
+				OnDead(this);
+			}
 		}
 
 		public void SetHeal(int nCasterID, float fValue)
@@ -216,7 +232,7 @@ namespace Galaxy
 
         public void SetHpCost(float nCostHp)
         {
-            float hp = Mathf.Max(0, m_AvatarData.HP - nCostHp);
+            float hp = Mathf.Max(1, m_AvatarData.HP - nCostHp);
             m_AvatarData.HP = hp;
         }
 
@@ -273,5 +289,15 @@ namespace Galaxy
         {
             ResetState(StateDefine.State_Fight);
         }
+		public bool IsDead
+		{
+			get { return CheckState(StateDefine.State_Death); }
+		}
+		public void Dead()
+		{
+			StateDeathParam param = new StateDeathParam();
+			SetFsmState(this, param);
+			SetState(StateDefine.State_Death);
+		}
     }
 }

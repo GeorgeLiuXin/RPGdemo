@@ -66,6 +66,14 @@ namespace Galaxy
 
 			pAvatar.Owner.SetState(StateDefine.State_LockActiveSkill);
 			pAvatar.Owner.SetState(StateDefine.State_LockMove);
+
+			DRSkillData pSkillData = GameEntry.DataTable.GetDataTable<DRSkillData>().GetDataRow(m_nSkillID);
+			if(pSkillData == null)
+			{
+				Log.Error("pSkillData '{0}': pSkillData is null!", m_nSkillID);
+				return;
+			}
+			pAvatar.Owner.PlayAnimation(pSkillData.MSV_AnimID);
 		}
 
 		protected override void OnUpdate(IFsm<Avatar> pAvatar, float elapseSeconds, float realElapseSeconds)

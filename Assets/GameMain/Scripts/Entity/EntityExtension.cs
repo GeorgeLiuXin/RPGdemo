@@ -1,5 +1,7 @@
 ﻿using GameFramework.DataTable;
 using System;
+using System.Collections;
+using UnityEngine;
 using UnityGameFramework.Runtime;
 
 namespace Galaxy
@@ -40,6 +42,17 @@ namespace Galaxy
 			}
 
 			entityComponent.ShowEntity(data.Id, logicType, AssetUtility.GetEntityAsset(drEntity.AssetName), entityGroup, priority, data);
+		}
+
+		public static void HideEntity(this EntityComponent entityComponent, Entity entity, float fTime)
+		{
+			entityComponent.StartCoroutine(WaitToHide(entityComponent, entity, fTime));
+		}
+
+		private static IEnumerator WaitToHide(EntityComponent entityComponent, Entity entity, float fTime)
+		{
+			yield return new WaitForSeconds(fTime);
+			HideEntity(entityComponent, entity);
 		}
 
 		public static void HideEntity(this EntityComponent entityComponent, Entity entity)

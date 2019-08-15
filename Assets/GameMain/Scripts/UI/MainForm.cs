@@ -18,8 +18,11 @@ namespace Galaxy
 
         [SerializeField]
         private Slider m_PlayerHpBar = null;
+		
+		[SerializeField]
+		private GameObject m_TargetParent = null;
 
-        [SerializeField]
+		[SerializeField]
         private Text m_TargetName = null;
 
         [SerializeField]
@@ -75,17 +78,24 @@ namespace Galaxy
                 return;
             m_PlayerHpBar.maxValue = m_LocalPlayer.MaxHP;
             m_PlayerHpBar.value = m_LocalPlayer.HP;
-            m_PlayerHpRatio.text = Utility.Text.Format("'{0}'%", m_LocalPlayer.HPRatio);
+            m_PlayerHpRatio.text = Utility.Text.Format("{0:P1}", m_LocalPlayer.HPRatio);
         }
 
         protected void SetTargetValue()
         {
             if (m_Target == null)
-                return;
-            m_TargetName.text = m_Target.Name;
+			{
+				if(m_TargetParent.activeSelf)
+					m_TargetParent.SetActive(false);
+				return;
+			}
+
+			if(!m_TargetParent.activeSelf)
+				m_TargetParent.SetActive(true);
+			m_TargetName.text = m_Target.Name;
             m_TargetHpBar.maxValue = m_Target.MaxHP;
             m_TargetHpBar.value = m_Target.HP;
-            m_TargetHpRatio.text = Utility.Text.Format("'{0}'%", m_Target.HPRatio);
+            m_TargetHpRatio.text = Utility.Text.Format("{0:P2}", m_Target.HPRatio);
         }
     }
 }

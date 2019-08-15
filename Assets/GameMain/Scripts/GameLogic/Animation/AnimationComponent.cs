@@ -165,8 +165,7 @@ namespace Galaxy
 			{
 				m_motionData.vExSpeed.z = vDeltaPos.z / fMotionTime;
 			}
-
-
+			
 			return true;
 		}
 

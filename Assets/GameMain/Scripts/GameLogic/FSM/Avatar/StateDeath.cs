@@ -51,6 +51,7 @@ namespace Galaxy
 				Log.Error("Current State '{0}': the Variable's(the initParam) type isn't right! '{1}'", typeof(StateIdle), typeof(Variable));
 				return;
 			}
+			pAvatar.Owner.PlayAnimation((int)CommonAnimation.Death);
 		}
 
 		protected override void SubscribeMyEvent()

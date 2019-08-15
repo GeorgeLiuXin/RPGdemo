@@ -30,7 +30,15 @@ namespace Galaxy
             gameObject.AddComponent<AIComponent>().SetOwner(this);
         }
 
-        public Vector3 GetSpawnPos()
+		protected override void ReleaseComponent()
+		{
+			base.ReleaseComponent();
+
+			Destroy(m_aiCom);
+			m_aiCom = null;
+		}
+
+		public Vector3 GetSpawnPos()
         {
             if (m_MonsterData==null)
             {
@@ -44,5 +52,12 @@ namespace Galaxy
         {
             return m_MonsterData;
         }
-    }
+
+		protected override void OnDead(Avatar attacker)
+		{
+			base.OnDead(attacker);
+			GameEntry.Entity.HideEntity(this, 3f);
+			AICom.OnDead();
+		}
+	}
 }
