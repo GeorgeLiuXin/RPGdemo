@@ -26,5 +26,10 @@
         /// 关于。
         /// </summary>
         AboutForm = 102,
+
+        /// <summary>
+        /// 战斗主界面。
+        /// </summary>
+        MainForm = 200,
     }
 }

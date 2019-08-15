@@ -8,6 +8,12 @@ namespace Galaxy
 		//temp
 		public GameObject m_effectClick;
 
+        public int m_LocalPlayerID
+        {
+            get;
+            private set;
+        }
+
 		// Use this for initialization
 		void Start()
 		{
@@ -28,5 +34,10 @@ namespace Galaxy
 		{
 			
 		}
+
+        public void SetLocalPlayer(int player)
+        {
+            m_LocalPlayerID = player;
+        }
 	}
 }

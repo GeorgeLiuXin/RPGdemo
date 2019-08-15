@@ -2,6 +2,29 @@
 
 namespace Galaxy
 {
+    public class ChangeTargetEvent : GameEventArgs
+    {
+        /// <summary>
+        /// 更改目标事件编号。
+        /// </summary>
+        public static readonly int EventId = typeof(ChangeTargetEvent).GetHashCode();
+
+        public override int Id
+        {
+            get
+            {
+                return EventId;
+            }
+        }
+        
+        public int TargetID;
+
+        public override void Clear()
+        {
+            TargetID = default(int);
+        }
+    }
+
 	public class SkillEffectEvent : GameEventArgs
 	{
 		/// <summary>

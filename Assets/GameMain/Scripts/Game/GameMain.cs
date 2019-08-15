@@ -10,6 +10,8 @@ namespace Galaxy
 
         private Player m_Player;
 
+        private int? m_MainFormId;
+
 		public override GameMode GameMode
 		{
 			get
@@ -38,11 +40,17 @@ namespace Galaxy
 			//level temp code
 			m_tempLevel = new LevelTest();
 			m_tempLevel.Initialize();
-		}
+            m_MainFormId = GameEntry.UI.OpenUIForm(UIFormId.MainForm);
+        }
 
-		public override void Shutdown()
-		{
-			GameEntry.Event.Unsubscribe(ShowEntitySuccessEventArgs.EventId, OnShowEntitySuccess);
+        public override void Shutdown()
+        {
+            if (m_MainFormId != null)
+            {
+                GameEntry.UI.CloseUIForm((int)m_MainFormId);
+            }
+
+            GameEntry.Event.Unsubscribe(ShowEntitySuccessEventArgs.EventId, OnShowEntitySuccess);
 			GameEntry.Event.Unsubscribe(ShowEntityFailureEventArgs.EventId, OnShowEntityFailure);
 
 			//level temp code
@@ -62,7 +70,9 @@ namespace Galaxy
 				m_Player = (Player)ne.Entity.Logic;
 				DRScene data = GameEntry.DataTable.GetDataTable<DRScene>().GetDataRow(2);
 				m_Player.transform.position = new Vector3(data.PosX, data.PosY, data.PosZ);
-			}
+
+                GameEntry.StaicGame.SetLocalPlayer(m_Player.Id);
+            }
 			else if(ne.EntityLogicType == typeof(Monster))
 			{
 				m_tempLevel.OnShowEntitySuccess(sender, e);
