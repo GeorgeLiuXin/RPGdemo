@@ -123,9 +123,10 @@ namespace Galaxy
 		}
 
 		protected virtual void OnDead(Avatar attacker)
-		{
-			GameEntry.Entity.HideEntity(this);
-		}
+        {
+            GameEntry.Fsm.DestroyFsm(m_fsm);
+            GameEntry.Entity.HideEntity(this);
+        }
 
         ////////////////////////////////////////////////////
         //移动参数
@@ -260,6 +261,10 @@ namespace Galaxy
 
         ///////////////////////////////////////////////////////
         //状态标记位设置
+        public bool IsFight
+        {
+            get { return CheckState(StateDefine.State_Fight); }
+        }
         public void EnterCombat()
         {
             SetState(StateDefine.State_Fight);
@@ -267,10 +272,6 @@ namespace Galaxy
         public void LeaveCombat()
         {
             ResetState(StateDefine.State_Fight);
-        }
-        public bool IsFight()
-        {
-            return CheckState(StateDefine.State_Fight);
         }
     }
 }

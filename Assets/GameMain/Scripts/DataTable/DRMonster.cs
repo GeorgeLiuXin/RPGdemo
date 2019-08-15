@@ -1,6 +1,6 @@
 ﻿//------------------------------------------------------------
 // 此文件由工具自动生成，请勿直接修改。
-// 生成时间：2019-08-15 22:19:45.434
+// 生成时间：2019-08-15 22:19:45.483
 //------------------------------------------------------------
 
 using GameFramework;
@@ -14,14 +14,14 @@ using UnityGameFramework.Runtime;
 namespace Galaxy
 {
     /// <summary>
-    /// 动画表。
+    /// 怪物表。
     /// </summary>
-    public class DRAnimation : DataRowBase
+    public class DRMonster : DataRowBase
     {
         private int m_Id = 0;
 
         /// <summary>
-        /// 获取动画编号。
+        /// 获取怪物编号。
         /// </summary>
         public override int Id
         {
@@ -32,63 +32,72 @@ namespace Galaxy
         }
 
         /// <summary>
-        /// 获取动画资源名。
+        /// 获取模型id。
         /// </summary>
-        public string ResAnimName
+        public int ModelID
         {
             get;
             private set;
         }
 
         /// <summary>
-        /// 获取是否打断自身。
+        /// 获取怪物属性集。
         /// </summary>
-        public int IsSelfRestart
+        public int MonsterAValue
         {
             get;
             private set;
         }
 
         /// <summary>
-        /// 获取是否动画位移。
+        /// 获取怪物类型。
         /// </summary>
-        public int Motion
+        public int MonsterType
         {
             get;
             private set;
         }
 
         /// <summary>
-        /// 获取动画层。
+        /// 获取怪物技能id。
         /// </summary>
-        public int Layer
+        public int AISkill1
         {
             get;
             private set;
         }
 
         /// <summary>
-        /// 获取动画组ID。
+        /// 获取怪物技能id。
         /// </summary>
-        public int GroupID
+        public int AISkill2
         {
             get;
             private set;
         }
 
         /// <summary>
-        /// 获取动画播放逻辑。
+        /// 获取怪物技能id。
         /// </summary>
-        public int GroupLogic
+        public int AISkill3
         {
             get;
             private set;
         }
 
         /// <summary>
-        /// 获取播放逻辑参数。
+        /// 获取怪物技能id。
         /// </summary>
-        public float GroupParam
+        public int AISkill4
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// 获取怪物技能id。
+        /// </summary>
+        public int AISkill5
         {
             get;
             private set;
@@ -107,13 +116,14 @@ namespace Galaxy
             index++;
             m_Id = int.Parse(columnTexts[index++]);
             index++;
-            ResAnimName = columnTexts[index++];
-            IsSelfRestart = int.Parse(columnTexts[index++]);
-            Motion = int.Parse(columnTexts[index++]);
-            Layer = int.Parse(columnTexts[index++]);
-            GroupID = int.Parse(columnTexts[index++]);
-            GroupLogic = int.Parse(columnTexts[index++]);
-            GroupParam = float.Parse(columnTexts[index++]);
+            ModelID = int.Parse(columnTexts[index++]);
+            MonsterAValue = int.Parse(columnTexts[index++]);
+            MonsterType = int.Parse(columnTexts[index++]);
+            AISkill1 = int.Parse(columnTexts[index++]);
+            AISkill2 = int.Parse(columnTexts[index++]);
+            AISkill3 = int.Parse(columnTexts[index++]);
+            AISkill4 = int.Parse(columnTexts[index++]);
+            AISkill5 = int.Parse(columnTexts[index++]);
 
             GeneratePropertyArray();
             return true;
@@ -127,13 +137,14 @@ namespace Galaxy
                 using (BinaryReader binaryReader = new BinaryReader(memoryStream, Encoding.UTF8))
                 {
                     m_Id = binaryReader.ReadInt32();
-                    ResAnimName = binaryReader.ReadString();
-                    IsSelfRestart = binaryReader.ReadInt32();
-                    Motion = binaryReader.ReadInt32();
-                    Layer = binaryReader.ReadInt32();
-                    GroupID = binaryReader.ReadInt32();
-                    GroupLogic = binaryReader.ReadInt32();
-                    GroupParam = binaryReader.ReadSingle();
+                    ModelID = binaryReader.ReadInt32();
+                    MonsterAValue = binaryReader.ReadInt32();
+                    MonsterType = binaryReader.ReadInt32();
+                    AISkill1 = binaryReader.ReadInt32();
+                    AISkill2 = binaryReader.ReadInt32();
+                    AISkill3 = binaryReader.ReadInt32();
+                    AISkill4 = binaryReader.ReadInt32();
+                    AISkill5 = binaryReader.ReadInt32();
                 }
             }
 
@@ -147,9 +158,49 @@ namespace Galaxy
             return false;
         }
 
+        private KeyValuePair<int, int>[] m_AISkill = null;
+
+        public int AISkillCount
+        {
+            get
+            {
+                return m_AISkill.Length;
+            }
+        }
+
+        public int GetAISkill(int id)
+        {
+            foreach (KeyValuePair<int, int> i in m_AISkill)
+            {
+                if (i.Key == id)
+                {
+                    return i.Value;
+                }
+            }
+
+            throw new GameFrameworkException(Utility.Text.Format("GetAISkill with invalid id '{0}'.", id.ToString()));
+        }
+
+        public int GetAISkillAt(int index)
+        {
+            if (index < 0 || index >= m_AISkill.Length)
+            {
+                throw new GameFrameworkException(Utility.Text.Format("GetAISkillAt with invalid index '{0}'.", index.ToString()));
+            }
+
+            return m_AISkill[index].Value;
+        }
+
         private void GeneratePropertyArray()
         {
-
+            m_AISkill = new KeyValuePair<int, int>[]
+            {
+                new KeyValuePair<int, int>(1, AISkill1),
+                new KeyValuePair<int, int>(2, AISkill2),
+                new KeyValuePair<int, int>(3, AISkill3),
+                new KeyValuePair<int, int>(4, AISkill4),
+                new KeyValuePair<int, int>(5, AISkill5),
+            };
         }
     }
 }

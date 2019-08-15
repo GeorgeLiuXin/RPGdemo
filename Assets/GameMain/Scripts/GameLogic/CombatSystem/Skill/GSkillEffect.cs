@@ -19,6 +19,15 @@ namespace Galaxy
             pTarget.ThreatCom.OnHurt(pCaster, fThreat);
         }
 
+        public void ProcessHealThreat(PlayerAValueData sCasterAValue, Avatar pCaster, Avatar pTarget, float fUserData, bool bHit)
+        {
+            if (pCaster == null || pTarget == null || pTarget.ThreatCom == null)
+                return;
+
+            float fThreat = GetThreatValue(sCasterAValue, fUserData, bHit);
+            pTarget.ThreatCom.OnHeal(pCaster, fThreat);
+        }
+
         public float GetThreatValue(PlayerAValueData sCasterAValue, float fUserData, bool bHit)
 		{
             //根据不同职业的不同属性集获得各自的嘲讽系数
@@ -28,10 +37,9 @@ namespace Galaxy
             float fThreat = Mathf.Max(fUserData * ((bHit) ? 1 : 0.1f), 1);
             return fThreat;
         }
+    }
 
-	}
-
-	public class GSkillEffect_Damage : GSkillEffect
+    public class GSkillEffect_Damage : GSkillEffect
 	{
 		public override bool Process(GSkillCalculation sCalculation, GTargetInfo sTarInfo, SkillAValueData sSkillAValue)
 		{
@@ -119,11 +127,11 @@ namespace Galaxy
 					(int)gameEvent.EffectValue, sTarInfo.m_vSrcPos,
 					sTarInfo.m_vTarPos, sTarInfo.m_vAimDir);
 			}
-			//产生效果事件
-			//////////////////////////////////////////////////////////////////////////
+            //产生效果事件
+            //////////////////////////////////////////////////////////////////////////
 
-			//产生仇恨
-            ProcessHurtThreat(sCalculation.m_CasterAValue, pCaster, pTarget, gameEvent.EffectValue, true);
+            //产生仇恨
+            ProcessHealThreat(sCalculation.m_CasterAValue, pCaster, pTarget, gameEvent.EffectValue, true);
 
 			GameEntry.Event.Fire(this, gameEvent);
 			return true;

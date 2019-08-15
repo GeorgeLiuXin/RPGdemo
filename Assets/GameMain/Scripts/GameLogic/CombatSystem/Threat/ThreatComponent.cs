@@ -227,9 +227,9 @@ namespace Galaxy
             return obj.nAvatarID == m_nTempPredicateAvatar;
         }
         
-        public float GetTarget()
+        public int GetTarget()
         {
-            return m_pTarget.fThreat;
+            return m_pTarget.nAvatarID;
         }
 
         public int GetThreatByIndex(int id)

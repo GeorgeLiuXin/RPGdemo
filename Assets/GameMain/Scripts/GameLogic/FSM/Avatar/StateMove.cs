@@ -1,5 +1,4 @@
 ﻿using GameFramework;
-using System;
 using UnityGameFramework.Runtime;
 using GameFramework.Fsm;
 using UnityEngine;
@@ -77,7 +76,6 @@ namespace Galaxy
 			{
 				if(pAvatar == null || pAvatar.Owner == null)
 				{
-					pAvatar.Owner.StopMovement();
 					ChangeState<StateIdle>(pAvatar);
 					return;
 				}

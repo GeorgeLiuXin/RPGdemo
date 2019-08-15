@@ -13,12 +13,19 @@ namespace Galaxy
 		private int m_nMonsterAValueID;
 
 		//tempcode
-		public LevelInfo info;
+		public MonsterInfo info;
 
-		public MonsterData(int entityId, int typeId, int monsterAValueID, LevelInfo _info)
-			: base(entityId, typeId, CampType.Enemy)
-		{
-			m_nMonsterAValueID = monsterAValueID;
+		public MonsterData(int entityId, int typeId, MonsterInfo _info)
+            : base(entityId, typeId, CampType.Enemy)
+        {
+            DRMonster data = GameEntry.DataTable.GetDataTable<DRMonster>().GetDataRow(_info.nMonsterID);
+            if (data == null)
+            {
+                Log.Error("当前怪物id不存在!");
+                return;
+            }
+
+            m_nMonsterAValueID = data.MonsterAValue;
 			UpdateAValueByInstance();
 			info = _info;
 		}
