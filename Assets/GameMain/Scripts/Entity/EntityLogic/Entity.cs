@@ -38,7 +38,7 @@ namespace Galaxy
 		{
 			return gameObject.transform.forward;
 		}
-		
+
         protected override void OnInit(object userData)
         {
             base.OnInit(userData);

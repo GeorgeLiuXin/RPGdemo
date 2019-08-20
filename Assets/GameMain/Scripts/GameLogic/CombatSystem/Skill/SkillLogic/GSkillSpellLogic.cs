@@ -50,11 +50,12 @@ namespace Galaxy
 			m_pOwner = param.m_pOwner;
 			m_TargetInfo = param.m_TargetInfo;
 			m_pSkillData = param.m_pSkillData;
+            m_pOwner.SetDir2D(m_TargetInfo.m_vAimDir);
 
-			m_nCasterID = m_pOwner.Id;
+            m_nCasterID = m_pOwner.Id;
 
 			////属性转换
-			//int32 nTransfromID = MSV_EffectTransform;
+			//int nTransfromID = MSV_EffectTransform;
 			//m_pXXXX = data.get(MSV_EffectTransform)
 			return true;
 		}

@@ -182,7 +182,18 @@ namespace Galaxy
 			}
 			AnimCom.PlayAnimation(nAnimID);
 		}
-        
+
+        public void SetDir2D(Vector3 vDir)
+        {
+            if (vDir == default(Vector3))
+                return;
+
+            vDir.Normalize2D();
+
+            Quaternion TargetRotation = Quaternion.LookRotation(vDir);
+            CachedTransform.rotation = TargetRotation;
+        }
+
         ////////////////////////////////////////////////////
         //常用参数
         public float HP

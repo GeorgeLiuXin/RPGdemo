@@ -35,6 +35,7 @@ namespace Galaxy
         {
             base.OnOpen(userData);
             GameEntry.Event.Subscribe(ChangeTargetEvent.EventId, OnChangeTarget);
+            GameEntry.Event.Subscribe(ShowEntitySuccessEventArgs.EventId, OnRefreshInfo);
 
             m_LocalPlayer = GameEntry.Entity.GetGameEntity(GameEntry.StaicGame.m_LocalPlayerID) as Player;
             if (m_LocalPlayer == null)
@@ -69,6 +70,7 @@ namespace Galaxy
         protected override void OnClose(object userData)
         {
             GameEntry.Event.Unsubscribe(ChangeTargetEvent.EventId, OnChangeTarget);
+            GameEntry.Event.Unsubscribe(ShowEntitySuccessEventArgs.EventId, OnRefreshInfo);
             base.OnClose(userData);
         }
 
@@ -96,6 +98,24 @@ namespace Galaxy
             m_TargetHpBar.maxValue = m_Target.MaxHP;
             m_TargetHpBar.value = m_Target.HP;
             m_TargetHpRatio.text = Utility.Text.Format("{0:P2}", m_Target.HPRatio);
+        }
+
+        protected void OnRefreshInfo(object sender, GameEventArgs e)
+        {
+            SkillEffectEvent ne = (SkillEffectEvent)e;
+            if (ne == null)
+                return;
+            Entity pTarget = GameEntry.Entity.GetGameEntity(ne.TargetID);
+            if (pTarget == null)
+                return;
+            if (pTarget.Id == m_LocalPlayer.Id)
+            {
+                SetPlayerValue();
+            }
+            else if (pTarget.Id == m_Target.Id)
+            {
+                SetTargetValue();
+            }
         }
     }
 }
