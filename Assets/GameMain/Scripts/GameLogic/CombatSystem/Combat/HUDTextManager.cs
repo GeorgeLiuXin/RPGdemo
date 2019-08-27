@@ -11,12 +11,12 @@ namespace Galaxy
 
         public void Initialize()
         {
-            GameEntry.Event.Subscribe(ShowEntitySuccessEventArgs.EventId, OnShowHUDText);
+            GameEntry.Event.Subscribe(SkillEffectEvent.EventId, OnShowHUDText);
         }
 
         public void Release()
         {
-            GameEntry.Event.Unsubscribe(ShowEntitySuccessEventArgs.EventId, OnShowHUDText);
+            GameEntry.Event.Unsubscribe(SkillEffectEvent.EventId, OnShowHUDText);
         }
 
         protected void OnShowHUDText(object sender, GameEventArgs e)

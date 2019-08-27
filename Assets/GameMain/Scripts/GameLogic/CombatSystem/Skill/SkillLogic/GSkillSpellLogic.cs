@@ -50,7 +50,6 @@ namespace Galaxy
 			m_pOwner = param.m_pOwner;
 			m_TargetInfo = param.m_TargetInfo;
 			m_pSkillData = param.m_pSkillData;
-            m_pOwner.SetDir2D(m_TargetInfo.m_vAimDir);
 
             m_nCasterID = m_pOwner.Id;
 
@@ -62,6 +61,7 @@ namespace Galaxy
 
 		public virtual bool ReInit()
 		{
+			m_pOwner.SetDir2D(m_TargetInfo.m_vAimDir);
 			return true;
 		}
 

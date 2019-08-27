@@ -35,7 +35,7 @@ namespace Galaxy
         {
             base.OnOpen(userData);
             GameEntry.Event.Subscribe(ChangeTargetEvent.EventId, OnChangeTarget);
-            GameEntry.Event.Subscribe(ShowEntitySuccessEventArgs.EventId, OnRefreshInfo);
+            GameEntry.Event.Subscribe(SkillEffectEvent.EventId, OnRefreshInfo);
 
             m_LocalPlayer = GameEntry.Entity.GetGameEntity(GameEntry.StaicGame.m_LocalPlayerID) as Player;
             if (m_LocalPlayer == null)
@@ -70,7 +70,7 @@ namespace Galaxy
         protected override void OnClose(object userData)
         {
             GameEntry.Event.Unsubscribe(ChangeTargetEvent.EventId, OnChangeTarget);
-            GameEntry.Event.Unsubscribe(ShowEntitySuccessEventArgs.EventId, OnRefreshInfo);
+            GameEntry.Event.Unsubscribe(SkillEffectEvent.EventId, OnRefreshInfo);
             base.OnClose(userData);
         }
 
@@ -84,8 +84,8 @@ namespace Galaxy
         }
 
         protected void SetTargetValue()
-        {
-            if (m_Target == null)
+		{
+			if(m_Target == null || m_Target.IsDead)
 			{
 				if(m_TargetParent.activeSelf)
 					m_TargetParent.SetActive(false);

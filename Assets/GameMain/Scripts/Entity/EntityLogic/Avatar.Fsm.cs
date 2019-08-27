@@ -37,7 +37,7 @@ namespace Galaxy
 
 		public bool SetFsmState(object sender, StateParam stateData)
 		{
-			if(m_fsm == null)
+			if(m_fsm == null || m_fsm.CurrentState == null)
 				return false;
 			m_changeFlag = false;
 			m_fsm.SetData(fsmNextData, stateData);

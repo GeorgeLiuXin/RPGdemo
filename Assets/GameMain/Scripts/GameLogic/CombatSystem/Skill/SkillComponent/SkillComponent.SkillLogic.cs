@@ -193,6 +193,9 @@ namespace Galaxy
 			if(m_pSpellLogic != null)
 				FinishSkill();
 
+			if(!pSpellLogic.SetFSMState())
+				return false;
+
 			//初始化施法逻辑
 			m_pSpellLogic = pSpellLogic;
 			
@@ -201,9 +204,8 @@ namespace Galaxy
 				sTarInfo.m_vAimDir = Owner.GetDir();
 
 			m_pSpellLogic.m_TargetInfo = sTarInfo;
-			
+
 			m_pSpellLogic.ResetSkillAValue();
-			m_pSpellLogic.SetFSMState();
 
 			if(!pSkillData.IsEffectStateCost())
 			{

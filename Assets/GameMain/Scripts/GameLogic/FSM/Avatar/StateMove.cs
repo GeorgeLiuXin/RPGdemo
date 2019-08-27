@@ -93,6 +93,13 @@ namespace Galaxy
 			}
 		}
 
+		protected override void OnLeave(IFsm<Avatar> pAvatar, bool isShutdown)
+		{
+			base.OnLeave(pAvatar, isShutdown);
+
+			pAvatar.Owner.StopMovement();
+		}
+
 		protected override void SubscribeMyEvent()
 		{
 
