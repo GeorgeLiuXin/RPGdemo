@@ -22,17 +22,18 @@ namespace Galaxy
 		}
 
 		//temp 需要优化 可以通过外层包裹一个类封装住IFsm<Avatar>
-		private static readonly string fsmStateFlag = "StateFlag";
 		private static readonly string fsmNextData = "NextData";
+
+		private StateFlag m_flag;
 
 		private void InitFsm()
         {
             m_fsm = GameEntry.Fsm.CreateFsm(Utility.Text.GetFullName(GetType(), Id.ToString())
                 , this, GameEntry.fsmMgr.GetAllFsmState<Avatar>());
             m_fsm.Start<StateIdle>();
-            m_fsm.SetData(fsmStateFlag, new StateFlag());
             m_fsm.SetData(fsmNextData, null);
-            m_changeFlag = false;
+			m_flag = new StateFlag();
+			m_changeFlag = false;
 		}
 
 		public bool SetFsmState(object sender, StateParam stateData)
@@ -54,24 +55,21 @@ namespace Galaxy
 
 		public bool CheckState(StateDefine eState)
 		{
-			StateFlag flag = m_fsm.GetData(fsmStateFlag) as StateFlag;
-			if(flag == null)
+			if(m_flag == null)
 				return false;
-			return flag.CheckState(eState);
+			return m_flag.CheckState(eState);
 		}
 		public void SetState(StateDefine eState)
 		{
-			StateFlag flag = m_fsm.GetData(fsmStateFlag) as StateFlag;
-			if(flag == null)
+			if(m_flag == null)
 				return;
-			flag.SetState(eState);
+			m_flag.SetState(eState);
 		}
 		public void ResetState(StateDefine eState)
 		{
-			StateFlag flag = m_fsm.GetData(fsmStateFlag) as StateFlag;
-			if(flag == null)
+			if(m_flag == null)
 				return;
-			flag.ResetState(eState);
+			m_flag.ResetState(eState);
 		}
 	}
 }

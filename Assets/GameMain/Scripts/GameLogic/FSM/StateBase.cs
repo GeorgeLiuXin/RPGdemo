@@ -75,7 +75,10 @@ namespace Galaxy
 		protected override void OnLeave(StateOwner pAvatar, bool isShutdown)
 		{
 			base.OnLeave(pAvatar, isShutdown);
-			pAvatar.Owner.ResetState(m_state);
+			if(!isShutdown)
+			{
+				pAvatar.Owner.ResetState(m_state);
+			}
 		}
 
 		/// <summary>
