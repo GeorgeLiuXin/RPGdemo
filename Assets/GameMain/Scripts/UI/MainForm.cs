@@ -31,7 +31,11 @@ namespace Galaxy
         [SerializeField]
         private Slider m_TargetHpBar = null;
 
-        protected override void OnOpen(object userData)
+		[SerializeField]
+		private bl_HUDText m_HUDText = null;
+		private HUDTextManager m_hudTextMgr;
+
+		protected override void OnOpen(object userData)
         {
             base.OnOpen(userData);
             GameEntry.Event.Subscribe(ChangeTargetEvent.EventId, OnChangeTarget);
@@ -45,9 +49,12 @@ namespace Galaxy
             }
 
             SetPlayerValue();
-        }
+			
+			m_hudTextMgr = new HUDTextManager();
+			m_hudTextMgr.Initialize(m_HUDText);
+		}
 
-        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+		protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
         {
             base.OnUpdate(elapseSeconds, realElapseSeconds);
 
@@ -68,8 +75,10 @@ namespace Galaxy
         }
 
         protected override void OnClose(object userData)
-        {
-            GameEntry.Event.Unsubscribe(ChangeTargetEvent.EventId, OnChangeTarget);
+		{
+			m_hudTextMgr.Release();
+
+			GameEntry.Event.Unsubscribe(ChangeTargetEvent.EventId, OnChangeTarget);
             GameEntry.Event.Unsubscribe(SkillEffectEvent.EventId, OnRefreshInfo);
             base.OnClose(userData);
         }

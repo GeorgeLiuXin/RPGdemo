@@ -103,6 +103,7 @@ GameObject:
   - component: {fileID: 224668064970965582}
   - component: {fileID: 222365147841339050}
   - component: {fileID: 114451239133664146}
+  - component: {fileID: 114493898511741312}
   m_Layer: 5
   m_Name: Plane
   m_TagString: Untagged
@@ -335,6 +336,24 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Slider+SliderEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
+--- !u!114 &114493898511741312
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1353780022213152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9dd29e2c9a04b984191b35f72f00907a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CanvasParent: {fileID: 224848793876136920}
+  TextPrefab: {fileID: 100000, guid: 9da2f097e8448ec4d9ec8d75b2b20e68, type: 2}
+  FadeSpeed: 50
+  FloatingSpeed: 4
+  HideDistance: 75
+  MaxViewAngle: 180
+  DestroyTextOnDeath: 1
 --- !u!114 &114527563782655260
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -514,6 +533,7 @@ MonoBehaviour:
   m_TargetName: {fileID: 114852496418877140}
   m_TargetHpRatio: {fileID: 114914185626023002}
   m_TargetHpBar: {fileID: 114608048340571712}
+  m_HUDText: {fileID: 114493898511741312}
 --- !u!114 &114910724391883258
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -7,7 +7,6 @@ namespace Galaxy
 	public class GameMain : GameBase
 	{
 		private LevelTest m_tempLevel;
-        private HUDTextManager m_hudTextMgr;
 
         private Player m_Player;
 
@@ -41,15 +40,13 @@ namespace Galaxy
 			//level temp code
 			m_tempLevel = new LevelTest();
 			m_tempLevel.Initialize();
-            m_MainFormId = GameEntry.UI.OpenUIForm(UIFormId.MainForm);
 
-            m_hudTextMgr = new HUDTextManager();
-            m_hudTextMgr.Initialize();
+			m_MainFormId = GameEntry.UI.OpenUIForm(UIFormId.MainForm);
         }
 
         public override void Shutdown()
-        {
-            if (m_MainFormId != null)
+		{
+			if(m_MainFormId != null)
             {
                 GameEntry.UI.CloseUIForm((int)m_MainFormId);
             }
@@ -59,8 +56,6 @@ namespace Galaxy
 
 			//level temp code
 			m_tempLevel.Shutdown();
-
-            m_hudTextMgr.Release();
         }
 
 		public override void Update(float elapseSeconds, float realElapseSeconds)
